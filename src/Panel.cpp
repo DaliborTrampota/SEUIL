@@ -10,6 +10,7 @@ void Panel::addChild(std::shared_ptr<UIElement> child) {
 
 bool Panel::contains(const glm::vec2& point) const {
     if (m_parent == nullptr) {}
+    return false;
 }
 
 void Panel::mouseMove(const glm::ivec2& pos) {
@@ -53,7 +54,7 @@ glm::ivec2 Panel::calculateSizeAndPosition(const glm::ivec2& parentSize) {
 
         calculated = glm::ivec2(size.calcX, size.calcY);
     } else if (std::holds_alternative<Size<Auto, Auto>>(m_size)) {
-        static_assert(false, "Auto size is not supported");
+        assert(false && "Auto size is not supported");
     } else if (std::holds_alternative<Size<Abs, Abs>>(m_size)) {
         auto& size = std::get<Size<Abs, Abs>>(m_size);
         size.calcX = size.x;
