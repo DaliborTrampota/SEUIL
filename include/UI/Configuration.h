@@ -20,7 +20,6 @@ namespace ui {
 
     struct Base {
         float x, y;
-        glm::ivec2 calc;
     };
 
     template <typename U, typename V>

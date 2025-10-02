@@ -4,59 +4,54 @@ using namespace ui;
 
 
 glm::ivec4 UIElement::calculateSizeAndPosition(const glm::ivec4& parentPosSize) {
-    glm::ivec4 calculatedDims{};
-
+    // make temp ivec4 here instead of capturing this:
+    // TODO anchor point
     std::visit(
-        [&calculatedDims, &parentPosSize](auto& pos) {
+        [this, &parentPosSize](auto& pos) {
             using T = std::decay_t<decltype(pos)>;
             if constexpr (std::is_same_v<T, Pos<Rel, Abs>>) {
-                pos.calc.x = parentPosSize.x * pos.x;
-                pos.calc.y = pos.y;
+                m_calculatedDims.x = parentPosSize.x * pos.x + parentPosSize.x;
+                m_calculatedDims.y = pos.y + parentPosSize.y;
             } else if constexpr (std::is_same_v<T, Pos<Abs, Rel>>) {
-                pos.calc.x = pos.x;
-                pos.calc.y = parentPosSize.y * pos.y;
+                m_calculatedDims.x = pos.x + parentPosSize.x;
+                m_calculatedDims.y = parentPosSize.y * pos.y + parentPosSize.y;
             } else if constexpr (std::is_same_v<T, Pos<Rel, Rel>>) {
-                pos.calc.x = parentPosSize.x * pos.x;
-                pos.calc.y = parentPosSize.y * pos.y;
+                m_calculatedDims.x = parentPosSize.x * pos.x + parentPosSize.x;
+                m_calculatedDims.y = parentPosSize.y * pos.y + parentPosSize.y;
             } else if constexpr (std::is_same_v<T, Pos<Abs, Abs>>) {
-                pos.calc.x = pos.x;
-                pos.calc.y = pos.y;
+                m_calculatedDims.x = pos.x + parentPosSize.x;
+                m_calculatedDims.y = pos.y + parentPosSize.y;
             }
-            calculatedDims.x = pos.calc.x;
-            calculatedDims.y = pos.calc.y;
         },
         m_position
     );
 
     std::visit(
-        [&calculatedDims, &parentDims](auto& position) {
-            using T = std::decay_t<decltype(position)>;
-            if constexpr (std::is_same_v<T, Pos<Rel, Abs>>) {
-                position.calc.x = parentDims.x * position.x;
-                position.calc.y = position.y;
-            } else if constexpr (std::is_same_v<T, Pos<Abs, Rel>>) {
-                position.calc.x = position.x;
-                position.calc.y = parentDims.y * position.y + parentDims.w;
-            } else if constexpr (std::is_same_v<T, Pos<Rel, Abs>>) {
-                position.calc.x = parentDims.x * position.x + parentDims.z;
-                position.calc.y = position.y;
-            } else if constexpr (std::is_same_v<T, Pos<Rel, Rel>>) {
-                position.calc.x = parentDims.x * position.x + parentDims.z;
-                position.calc.y = parentDims.y * position.y + parentDims.w;
+        [this, &parentPosSize](auto& size) {
+            using T = std::decay_t<decltype(size)>;
+            if constexpr (std::is_same_v<T, Size<Rel, Abs>>) {
+                m_calculatedDims.z = parentPosSize.z * size.x;
+                m_calculatedDims.w = size.y;
+            } else if constexpr (std::is_same_v<T, Size<Abs, Rel>>) {
+                m_calculatedDims.z = size.x;
+                m_calculatedDims.w = parentPosSize.w * size.y;
+            } else if constexpr (std::is_same_v<T, Size<Abs, Abs>>) {
+                m_calculatedDims.z = size.x;
+                m_calculatedDims.w = size.y;
+            } else if constexpr (std::is_same_v<T, Size<Rel, Rel>>) {
+                m_calculatedDims.z = parentPosSize.z * size.x;
+                m_calculatedDims.w = parentPosSize.w * size.y;
+            } else if constexpr (std::is_same_v<T, Size<Auto, Auto>>) {
+                assert(false && "Auto size is not supported");
             }
-            calculatedDims.x = position.calc.x;
-            calculatedDims.y = position.calc.y;
         },
-        m_position
+        m_size
     );
 
-    return calculatedDims;
+    return m_calculatedDims;
 }
 
 bool UIElement::contains(const glm::vec2& point) const {
-    glm::ivec2 size = std::get<Size<Abs, Abs>>(m_size).calc;
-    glm::ivec2 position = std::get<Pos<Abs, Abs>>(m_position).calc;
-
-    return point.x >= position.x && point.x <= position.x + size.x && point.y >= position.y &&
-           point.y <= position.y + size.y;
+    return point.x >= m_calculatedDims.x && point.x <= m_calculatedDims.x + m_calculatedDims.z &&
+           point.y >= m_calculatedDims.y && point.y <= m_calculatedDims.y + m_calculatedDims.w;
 }

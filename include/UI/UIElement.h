@@ -34,6 +34,7 @@ namespace ui {
         AnchorPoint m_anchorPoint;
         Positions m_position;
         Sizes m_size;
+        glm::ivec4 m_calculatedDims = {0, 0, 0, 0};
 
         friend class Renderer;
         /// @brief Calculates the size and position of the element in the hierarchy.
