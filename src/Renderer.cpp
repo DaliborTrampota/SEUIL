@@ -46,7 +46,7 @@ void Renderer::layoutElement(UIElement& element, const glm::ivec4& parentDims) {
     const glm::ivec4 calculatedDims = element.calculateSizeAndPosition(parentDims);
 
     if (auto* panel = dynamic_cast<Panel*>(&element)) {
-        for (auto& child : panel->m_children) {
+        for (auto& child : panel->children()) {
             layoutElement(*child, calculatedDims);
         }
     }
@@ -59,9 +59,9 @@ void Renderer::render() {
 }
 
 void Renderer::renderPanel(Panel& panel) {
-    m_impl->renderQuad(panel.m_calculatedDims);
+    m_impl->renderPanel(panel);
 
-    for (auto& child : panel.m_children) {
+    for (auto& child : panel.children()) {
         child->visit(*this);
     }
 }

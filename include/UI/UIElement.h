@@ -29,6 +29,7 @@ namespace ui {
         /// @return True if the panel contains the point, false otherwise.
         bool contains(const glm::vec2& point) const;
 
+        virtual void visit(Renderer& renderer) = 0;
 
       protected:
         AnchorPoint m_anchorPoint;
@@ -37,10 +38,11 @@ namespace ui {
         glm::ivec4 m_calculatedDims = {0, 0, 0, 0};
 
         friend class Renderer;
+        friend class OpenGLRendererImpl;  // TODO new impls has to be added, bad design?
+
         /// @brief Calculates the size and position of the element in the hierarchy.
         /// @param parentPosSize The position and size of the parent element.
         /// @return The dimensions of the element. (x = pos.x, y = pos.y, z = size.x, w = size.y)
         glm::ivec4 calculateSizeAndPosition(const glm::ivec4& parentPosSize);
-        virtual void visit(Renderer& renderer) = 0;
     };
 }  // namespace ui

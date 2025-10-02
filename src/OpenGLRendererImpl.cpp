@@ -2,6 +2,8 @@
 
 #include <glad/glad.h>
 
+#include <UI/Panel.h>
+
 using namespace ui;
 
 OpenGLRendererImpl::OpenGLRendererImpl(unsigned int fboID, const glm::ivec2& viewportSize)
@@ -60,9 +62,14 @@ void OpenGLRendererImpl::setupFBO() {
 }
 
 
-void OpenGLRendererImpl::renderStyledQuad() const {
+void OpenGLRendererImpl::renderQuad(const glm::ivec4& posSize) const {
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboID);
     glViewport(0, 0, m_viewportSize.x, m_viewportSize.y);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void OpenGLRendererImpl::renderPanel(const Panel& panel) const {
+    renderQuad(panel.m_calculatedDims);
 }

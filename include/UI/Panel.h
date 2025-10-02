@@ -11,7 +11,7 @@
 namespace ui {
 
     class Panel : public UIElement {
-        friend class Renderer;
+        //friend class Renderer;
 
       public:
         template <typename U, typename V, typename S, typename T>
@@ -27,8 +27,12 @@ namespace ui {
         /// @brief Adds a child element to the panel.
         /// @param child The child element to add.
         void addChild(std::shared_ptr<UIElement> child);
+        std::vector<std::shared_ptr<UIElement>>& children() { return m_children; }
 
         void mouseMove(const glm::ivec2& pos) override;
+
+        // moved it from private to public and removed friend, should it be in public?
+        void visit(Renderer& renderer) override;
 
       protected:
         Style<Panel> m_style;
@@ -38,8 +42,6 @@ namespace ui {
 
         std::shared_ptr<Panel> m_parent = nullptr;
         std::vector<std::shared_ptr<UIElement>> m_children;
-
-        void visit(Renderer& renderer) override;
     };
 
 }  // namespace ui
