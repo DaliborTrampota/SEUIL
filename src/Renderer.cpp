@@ -63,7 +63,7 @@ void Renderer::mouseMove(const glm::ivec2& pos) {
 void Renderer::update(float dt) {
     if (m_dirty) {
         if (m_root) {
-            layoutElement(*m_root, m_viewportSize);
+            layoutElement(*m_root, {0, 0, m_viewportSize.x, m_viewportSize.y});
         }
         m_dirty = false;
     }
@@ -83,12 +83,12 @@ void Renderer::resize() {
     m_dirty = true;
 }
 
-void Renderer::layoutElement(UIElement& element, const glm::ivec2& parentSize) {
-    const glm::ivec2 calculatedSize = element.calculateSizeAndPosition(parentSize);
+void Renderer::layoutElement(UIElement& element, const glm::ivec4& parentDims) {
+    const glm::ivec4 calculatedDims = element.calculateSizeAndPosition(parentDims);
 
     if (auto* panel = dynamic_cast<Panel*>(&element)) {
         for (auto& child : panel->m_children) {
-            layoutElement(*child, calculatedSize);
+            layoutElement(*child, calculatedDims);
         }
     }
 }

@@ -36,6 +36,6 @@ namespace ui {
         void render();
 
         void resize();
-        void layoutElement(UIElement& element, const glm::ivec2& parentSize);
+        void layoutElement(UIElement& element, const glm::ivec4& parentDims);
     };
 }  // namespace ui

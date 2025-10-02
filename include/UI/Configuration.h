@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <glm/glm.hpp>
 
 namespace ui {
@@ -17,52 +18,55 @@ namespace ui {
         BottomRight,
     };
 
+    struct Base {
+        float x, y;
+        glm::ivec2 calc;
+    };
+
     template <typename U, typename V>
     struct Pos {};
-
-    struct PosBase {
-        float x, y;
-    };
 
     struct Rel;
     struct Abs;
     struct Auto;
 
-    template <>
-    struct Pos<Rel, Rel> : public PosBase {};
+    template <typename T>
+    concept ValidSizeT = std::same_as<T, Abs> || std::same_as<T, Rel> || std::same_as<T, Auto>;
+
+    template <typename T>
+    concept ValidPosT = std::same_as<T, Abs> || std::same_as<T, Rel>;
+
 
     template <>
-    struct Pos<Abs, Abs> : public PosBase {};
+    struct Pos<Rel, Rel> : public Base {};
 
     template <>
-    struct Pos<Abs, Rel> : public PosBase {};
+    struct Pos<Abs, Abs> : public Base {};
 
     template <>
-    struct Pos<Rel, Abs> : public PosBase {};
+    struct Pos<Abs, Rel> : public Base {};
+
+    template <>
+    struct Pos<Rel, Abs> : public Base {};
 
 
     template <typename U, typename V>
     struct Size {};
 
-    struct SizeBase {
-        float x, y;
-        float calcX, calcY;
-    };
+    template <>
+    struct Size<Abs, Abs> : public Base {};
 
     template <>
-    struct Size<Abs, Abs> : public SizeBase {};
+    struct Size<Rel, Rel> : public Base {};
 
     template <>
-    struct Size<Rel, Rel> : public SizeBase {};
+    struct Size<Abs, Rel> : public Base {};
 
     template <>
-    struct Size<Abs, Rel> : public SizeBase {};
+    struct Size<Rel, Abs> : public Base {};
 
     template <>
-    struct Size<Rel, Abs> : public SizeBase {};
-
-    template <>
-    struct Size<Auto, Auto> : public SizeBase {
+    struct Size<Auto, Auto> : public Base {
     };  // doesnt matter that we waste space with x and y, because it will be in union anyway and the space is reserved anyway.
 
 
