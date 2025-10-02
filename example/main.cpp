@@ -1,7 +1,16 @@
+#include <UI/OpenGLRendererImpl.h>
 #include <UI/Panel.h>
+#include <UI/Renderer.h>
+
+#include <memory>
 
 int main() {
-    ui::Panel panel(
+    std::unique_ptr<ui::OpenGLRendererImpl> rendererImpl =
+        std::make_unique<ui::OpenGLRendererImpl>(0, glm::ivec2(1000, 1000));
+
+    ui::Renderer renderer(std::move(rendererImpl), {1000, 1000});
+
+    std::shared_ptr<ui::Panel> panel = std::make_shared<ui::Panel>(
         ui::Pos<ui::Abs, ui::Abs>{0, 0},
         ui::Size<ui::Rel, ui::Rel>{1, 1},
         ui::Style<ui::Panel>{},
@@ -9,14 +18,16 @@ int main() {
     );
 
 
-    ui::Panel child(
+    std::shared_ptr<ui::Panel> child = std::make_shared<ui::Panel>(
         ui::Pos<ui::Rel, ui::Rel>{0.5, 0.5},
         ui::Size<ui::Rel, ui::Rel>{0.5, 0.5},
         ui::Style<ui::Panel>{},
         ui::AnchorPoint::MidTop
     );
 
-    panel.addChild(std::move(child));
+    panel->addChild(std::move(child));
+
+    renderer.setRoot(panel);
 
     return 0;
 }
