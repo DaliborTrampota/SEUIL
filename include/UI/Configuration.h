@@ -79,5 +79,6 @@ namespace ui {
     template <>
     struct Style<Panel> {
         ColorRGBA backgroundColor;
+        float roundRadius;
     };
 }  // namespace ui

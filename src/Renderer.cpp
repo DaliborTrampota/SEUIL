@@ -55,6 +55,7 @@ void Renderer::layoutElement(UIElement& element, const glm::ivec4& parentDims) {
 void Renderer::render() {
     if (m_root) {
         m_root->visit(*this);
+        m_impl->render();
     }
 }
 

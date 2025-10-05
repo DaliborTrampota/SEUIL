@@ -3,6 +3,8 @@
 #include <glm/glm.hpp>
 #include "Configuration.h"
 
+#include "detail/Quad.h"
+
 namespace ui {
     class Panel;
 
@@ -17,8 +19,11 @@ namespace ui {
 
         // template <typename T>
         // virtual void renderStyledQuad(const Style<T>& style) const = 0;
-        virtual void renderQuad(const glm::ivec4& posSize) const = 0;
+        virtual detail::Quad makeQuad(
+            const glm::ivec4& posSize, const glm::vec4& color, float roundness
+        ) const = 0;
 
+        virtual void render() = 0;
         virtual void renderPanel(const Panel& panel) const = 0;
 
       protected:

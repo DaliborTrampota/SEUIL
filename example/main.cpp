@@ -5,10 +5,7 @@
 #include <memory>
 
 int main() {
-    std::unique_ptr<ui::OpenGLRendererImpl> rendererImpl =
-        std::make_unique<ui::OpenGLRendererImpl>(0, glm::ivec2(1000, 1000));
-
-    ui::Renderer renderer(std::move(rendererImpl), {1000, 1000});
+    ui::Renderer renderer(ui::RendererType::OpenGL, {1000, 1000});
 
     std::shared_ptr<ui::Panel> panel = std::make_shared<ui::Panel>(
         ui::Pos<ui::Abs, ui::Abs>{0, 0},

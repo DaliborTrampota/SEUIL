@@ -34,6 +34,8 @@ namespace ui {
         // moved it from private to public and removed friend, should it be in public?
         void visit(Renderer& renderer) override;
 
+        Style<Panel>& style() { return m_style; }
+
       protected:
         Style<Panel> m_style;
 
