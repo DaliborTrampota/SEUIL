@@ -27,6 +27,7 @@ void Renderer::update(float dt) {
         if (m_root) {
             glm::ivec2 viewportSize = m_impl->viewportSize();
             layoutElement(*m_root, {0, 0, viewportSize.x, viewportSize.y});
+            render();
         }
         m_dirty = false;
     }
@@ -41,6 +42,11 @@ void Renderer::setViewportSize(const glm::ivec2& size) {
     m_impl->resize(size);
     m_dirty = true;
 }
+
+unsigned int Renderer::textureID() const {
+    return m_impl->textureID();
+}
+
 
 void Renderer::layoutElement(UIElement& element, const glm::ivec4& parentDims) {
     const glm::ivec4 calculatedDims = element.calculateSizeAndPosition(parentDims);

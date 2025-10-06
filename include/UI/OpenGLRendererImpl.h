@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 
-#include <UI/detail/Quad.h>
+#include "../src/detail/Quad.h"
 
 namespace ui {
     class OpenGLRendererImpl : public RendererImpl {
@@ -17,7 +17,11 @@ namespace ui {
       private:
         unsigned int m_fboID = 0;
         unsigned int m_fboTextureID = 0;
+        unsigned int m_fboRenderbufferID = 0;
+
         unsigned int m_programID = 0;
+        unsigned int m_vaoID = 0;
+        unsigned int m_vboID = 0;
         std::vector<detail::UIVertex> m_vertices;
 
 
@@ -28,7 +32,8 @@ namespace ui {
         ) const override;
 
         void render() override;
-        void renderPanel(const Panel& panel) const override;
+        void renderPanel(const Panel& panel) override;
+        unsigned int textureID() const override { return m_fboTextureID; }
 
 
         void setupFBO();
@@ -36,5 +41,6 @@ namespace ui {
         void setupBuffer();
 
         void beforeRender();
+        void afterRender();
     };
 }  // namespace ui

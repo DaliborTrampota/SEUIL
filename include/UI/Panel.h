@@ -35,6 +35,7 @@ namespace ui {
         void visit(Renderer& renderer) override;
 
         Style<Panel>& style() { return m_style; }
+        const Style<Panel>& style_c() const { return m_style; }
 
       protected:
         Style<Panel> m_style;

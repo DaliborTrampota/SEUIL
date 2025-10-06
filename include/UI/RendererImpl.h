@@ -24,7 +24,9 @@ namespace ui {
         ) const = 0;
 
         virtual void render() = 0;
-        virtual void renderPanel(const Panel& panel) const = 0;
+        virtual void renderPanel(const Panel& panel) = 0;
+
+        virtual unsigned int textureID() const = 0;
 
       protected:
         glm::ivec2 m_viewportSize;

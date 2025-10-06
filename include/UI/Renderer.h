@@ -26,6 +26,8 @@ namespace ui {
 
         void renderPanel(Panel& panel);
 
+        unsigned int textureID() const;
+
       protected:
         void setupFBO();
 

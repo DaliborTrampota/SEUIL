@@ -14,3 +14,16 @@ target_link_libraries(seuil PRIVATE glm)
 target_include_directories(
     seuil SYSTEM PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
+
+file(GLOB_RECURSE SEUIL_RESOURCES "${CMAKE_CURRENT_SOURCE_DIR}/resources/*")
+target_sources(seuil PRIVATE ${SEUIL_RESOURCES})
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/resources" PREFIX "Resources" FILES ${SEUIL_RESOURCES})
+
+function(setup_seuil_resource_copy TARGET_NAME)
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/resources"
+            "$<TARGET_FILE_DIR:${TARGET_NAME}>/resources"
+        COMMENT "Copying SEUIL resources to build directory"
+    )
+endfunction()

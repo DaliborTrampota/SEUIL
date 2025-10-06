@@ -38,5 +38,5 @@ namespace ui::detail {
         }
 
         ~Shader() { glDeleteShader(ID); }
-    }
+    };
 }  // namespace ui::detail

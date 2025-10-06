@@ -9,11 +9,6 @@ namespace ui::detail {
         Panel,
     };
 
-    struct Quad {
-        UIVertex vertices[4];
-        QuadType type;
-    };
-
     struct UIVertex {
         glm::vec2 pos;
         glm::vec2 uv;
@@ -21,4 +16,10 @@ namespace ui::detail {
         float roundness;
         QuadType type;
     };
+
+    struct Quad {
+        UIVertex vertices[6];
+        QuadType type;
+    };
+
 }  // namespace ui::detail

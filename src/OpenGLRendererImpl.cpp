@@ -4,8 +4,8 @@
 
 #include <UI/Panel.h>
 
-#include <UI/detail/Quad.h>
-#include <UI/detail/Shader.h>
+#include "../src/detail/Quad.h"
+#include "../src/detail/Shader.h"
 
 using namespace ui;
 
@@ -42,16 +42,13 @@ void OpenGLRendererImpl::setupFBO() {
     if (m_fboTextureID) {
         glDeleteTextures(1, &m_fboTextureID);
     }
-
+    if (m_fboID == 0) {
+        glGenFramebuffers(1, &m_fboID);
+    }
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboID);
 
     glGenTextures(1, &m_fboTextureID);
     glBindTexture(GL_TEXTURE_2D, m_fboTextureID);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     glTexImage2D(
         GL_TEXTURE_2D,
@@ -64,8 +61,20 @@ void OpenGLRendererImpl::setupFBO() {
         GL_UNSIGNED_BYTE,
         nullptr
     );
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_fboTextureID, 0);
-    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glGenRenderbuffers(1, &m_fboRenderbufferID);
+    glBindRenderbuffer(GL_RENDERBUFFER, m_fboRenderbufferID);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_viewportSize.x, m_viewportSize.y);
+    glFramebufferRenderbuffer(
+        GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_fboRenderbufferID
+    );
 
     assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 
@@ -73,11 +82,13 @@ void OpenGLRendererImpl::setupFBO() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    //glBindTexture(GL_TEXTURE_2D, 0);
+    //glBindRenderbuffer(GL_RENDERBUFFER, 0);
 }
 
 void OpenGLRendererImpl::setupShaders() {
-    detail::Shader vertexShader("src/shaders/UI.vert", GL_VERTEX_SHADER);
-    detail::Shader fragmentShader("src/shaders/UI.frag", GL_FRAGMENT_SHADER);
+    detail::Shader vertexShader("resources/shaders/SEUIL.vert", GL_VERTEX_SHADER);
+    detail::Shader fragmentShader("resources/shaders/SEUIL.frag", GL_FRAGMENT_SHADER);
 
     m_programID = glCreateProgram();
     glAttachShader(m_programID, vertexShader.ID);
@@ -108,23 +119,22 @@ void OpenGLRendererImpl::setupBuffer() {
 
     int stride = sizeof(detail::UIVertex);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, 0);  // pos
+    glEnableVertexAttribArray(0);
     glVertexAttribPointer(
         1, 2, GL_FLOAT, GL_FALSE, stride, (void*)(uintptr_t(offsetof(detail::UIVertex, uv)))
     );  // uv
+    glEnableVertexAttribArray(1);
     glVertexAttribPointer(
         2, 4, GL_FLOAT, GL_FALSE, stride, (void*)(uintptr_t(offsetof(detail::UIVertex, color)))
     );  // color
+    glEnableVertexAttribArray(2);
     glVertexAttribPointer(
         3, 1, GL_FLOAT, GL_FALSE, stride, (void*)(uintptr_t(offsetof(detail::UIVertex, roundness)))
     );  // roundness
+    glEnableVertexAttribArray(3);
     glVertexAttribIPointer(
         4, 1, GL_UNSIGNED_INT, stride, (void*)(uintptr_t(offsetof(detail::UIVertex, type)))
     );  // type
-
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-    glEnableVertexAttribArray(3);
     glEnableVertexAttribArray(4);
 
     glBindVertexArray(0);
@@ -134,11 +144,23 @@ void OpenGLRendererImpl::setupBuffer() {
 
 void OpenGLRendererImpl::beforeRender() {
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboID);
+    glDisable(GL_DEPTH_TEST);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     glViewport(0, 0, m_viewportSize.x, m_viewportSize.y);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);  // Clear to fully transparent
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     glUseProgram(m_programID);
+
+    // Set screen size uniform - REQUIRED for coordinate conversion!
+    glUniform2f(
+        glGetUniformLocation(m_programID, "uScreenSize"),
+        (float)m_viewportSize.x,
+        (float)m_viewportSize.y
+    );
 
     glBindVertexArray(m_vaoID);
     glBindBuffer(GL_ARRAY_BUFFER, m_vboID);
@@ -151,6 +173,11 @@ void OpenGLRendererImpl::beforeRender() {
 }
 
 void OpenGLRendererImpl::afterRender() {
+    m_vertices.clear();
+
+    // Restore OpenGL state
+    glDisable(GL_BLEND);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glUseProgram(0);
@@ -160,35 +187,35 @@ void OpenGLRendererImpl::afterRender() {
 detail::Quad OpenGLRendererImpl::makeQuad(
     const glm::ivec4& posSize, const glm::vec4& color, float roundness
 ) const {
-    glm::vec2 BL = {posSize.x, posSize.y - posSize.w};
-    glm::vec2 BR = {posSize.x + posSize.z, posSize.y - posSize.w};
+    glm::vec2 BL = {posSize.x, posSize.y + posSize.w};
+    glm::vec2 BR = {posSize.x + posSize.z, posSize.y + posSize.w};
     glm::vec2 TL = {posSize.x, posSize.y};
     glm::vec2 TR = {posSize.x + posSize.z, posSize.y};
 
-    const detail::UIVertex quadVertices[] = {
-        {BL, glm::vec2(0.0f, 0.0f), color, roundness},
-        {TL, glm::vec2(0.0f, 1.0f), color, roundness},
-        {BR, glm::vec2(1.0f, 0.0f), color, roundness},
-        {TR, glm::vec2(1.0f, 1.0f), color, roundness},
-        {BR, glm::vec2(1.0f, 0.0f), color, roundness},
-        {TL, glm::vec2(0.0f, 1.0f), color, roundness},
-    };
+    detail::Quad quad;
+    quad.vertices[0] = {BR, glm::vec2(1.0f, 0.0f), color, roundness};
+    quad.vertices[1] = {TL, glm::vec2(0.0f, 1.0f), color, roundness};
+    quad.vertices[2] = {BL, glm::vec2(0.0f, 0.0f), color, roundness};
+    quad.vertices[3] = {TL, glm::vec2(0.0f, 1.0f), color, roundness};
+    quad.vertices[4] = {BR, glm::vec2(1.0f, 0.0f), color, roundness};
+    quad.vertices[5] = {TR, glm::vec2(1.0f, 1.0f), color, roundness};
 
-    return detail::Quad{quadVertices};
+    return quad;
 }
 
 
 void OpenGLRendererImpl::render() {
     beforeRender();
-    for (const auto& quad : m_quads) {
-        glBindTexture(GL_TEXTURE_2D, m_fboTextureID);
-        glDrawArrays(GL_TRIANGLES, 0, 4);
+
+    if (m_vertices.size() > 0) {
+        glDrawArrays(GL_TRIANGLES, 0, m_vertices.size());
     }
+
     afterRender();
 }
 
-void OpenGLRendererImpl::renderPanel(const Panel& panel) const {
-    const auto& style = panel.style();
+void OpenGLRendererImpl::renderPanel(const Panel& panel) {
+    const auto& style = panel.style_c();
     detail::Quad quad = makeQuad(panel.m_calculatedDims, style.backgroundColor, style.roundRadius);
 
     for (auto& vert : quad.vertices) {
