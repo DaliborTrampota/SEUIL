@@ -32,7 +32,9 @@ void OpenGLRendererImpl::resize(const glm::ivec2& newSize) {
 
     glUseProgram(m_programID);
     glUniform2f(
-        glGetUniformLocation(m_programID, "uScreenSize"), m_viewportSize.x, m_viewportSize.y
+        glGetUniformLocation(m_programID, "uScreenSize"),
+        (float)m_viewportSize.x,
+        (float)m_viewportSize.y
     );
     glUseProgram(0);
 }
@@ -149,18 +151,11 @@ void OpenGLRendererImpl::beforeRender() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glViewport(0, 0, m_viewportSize.x, m_viewportSize.y);
+    //glViewport(0, 0, m_viewportSize.x, m_viewportSize.y);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);  // Clear to fully transparent
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glUseProgram(m_programID);
-
-    // Set screen size uniform - REQUIRED for coordinate conversion!
-    glUniform2f(
-        glGetUniformLocation(m_programID, "uScreenSize"),
-        (float)m_viewportSize.x,
-        (float)m_viewportSize.y
-    );
 
     glBindVertexArray(m_vaoID);
     glBindBuffer(GL_ARRAY_BUFFER, m_vboID);
