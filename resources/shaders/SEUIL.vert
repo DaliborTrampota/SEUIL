@@ -12,7 +12,7 @@ uniform vec2 uScreenSize;
 out vec3 pos;
 out vec2 uv;
 out vec4 color;
-out float roundness;
+flat out float roundness;
 flat out uint type;
 
 void main()

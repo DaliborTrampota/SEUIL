@@ -10,14 +10,14 @@ glm::ivec4 UIElement::calculateSizeAndPosition(const glm::ivec4& parentPosSize) 
         [this, &parentPosSize](auto& pos) {
             using T = std::decay_t<decltype(pos)>;
             if constexpr (std::is_same_v<T, Pos<Rel, Abs>>) {
-                m_calculatedDims.x = parentPosSize.x * pos.x + parentPosSize.x;
+                m_calculatedDims.x = parentPosSize.z * pos.x + parentPosSize.x;
                 m_calculatedDims.y = pos.y + parentPosSize.y;
             } else if constexpr (std::is_same_v<T, Pos<Abs, Rel>>) {
                 m_calculatedDims.x = pos.x + parentPosSize.x;
-                m_calculatedDims.y = parentPosSize.y * pos.y + parentPosSize.y;
+                m_calculatedDims.y = parentPosSize.w * pos.y + parentPosSize.y;
             } else if constexpr (std::is_same_v<T, Pos<Rel, Rel>>) {
-                m_calculatedDims.x = parentPosSize.x * pos.x + parentPosSize.x;
-                m_calculatedDims.y = parentPosSize.y * pos.y + parentPosSize.y;
+                m_calculatedDims.x = parentPosSize.z * pos.x + parentPosSize.x;
+                m_calculatedDims.y = parentPosSize.w * pos.y + parentPosSize.y;
             } else if constexpr (std::is_same_v<T, Pos<Abs, Abs>>) {
                 m_calculatedDims.x = pos.x + parentPosSize.x;
                 m_calculatedDims.y = pos.y + parentPosSize.y;
