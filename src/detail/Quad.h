@@ -13,8 +13,10 @@ namespace ui::detail {
         glm::vec2 pos;
         glm::vec2 uv;
         glm::vec4 color;
-        float roundness;
+        unsigned int roundness;
         QuadType type;
+        unsigned int borderThickness;
+        glm::vec3 borderColor;
     };
 
     struct Quad {

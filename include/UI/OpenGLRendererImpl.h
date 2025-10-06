@@ -28,7 +28,7 @@ namespace ui {
         void resize(const glm::ivec2& viewportSize) override;
 
         detail::Quad makeQuad(
-            const glm::ivec4& posSize, const glm::vec4& color, float roundness
+            const glm::ivec4& posSize, const glm::vec4& color, unsigned int roundness = 0
         ) const override;
 
         void render() override;

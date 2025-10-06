@@ -3,17 +3,21 @@
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aUV;
 layout (location = 2) in vec4 aColor;
-layout (location = 3) in float aRoundness;
+layout (location = 3) in uint aRoundness;
 layout (location = 4) in uint aType;
 
-uniform vec2 uScreenSize;
+layout (location = 5) in uint aBorderThickness;
+layout (location = 6) in vec3 aBorderColor;
 
+uniform vec2 uScreenSize;
 
 out vec3 pos;
 out vec2 uv;
 out vec4 color;
-flat out float roundness;
+flat out uint roundness;
 flat out uint type;
+flat out uint borderThickness;
+out vec4 borderColor;
 
 void main()
 {
@@ -22,6 +26,8 @@ void main()
     pos = aPos;
     color = aColor;
     roundness = aRoundness;
+    borderThickness = aBorderThickness;
+    borderColor = vec4(aBorderColor, color.a);
 
     // Convert from [0, width] to [-1, 1]
     vec2 ndc = vec2(

@@ -130,14 +130,27 @@ void OpenGLRendererImpl::setupBuffer() {
         2, 4, GL_FLOAT, GL_FALSE, stride, (void*)(uintptr_t(offsetof(detail::UIVertex, color)))
     );  // color
     glEnableVertexAttribArray(2);
-    glVertexAttribPointer(
-        3, 1, GL_FLOAT, GL_FALSE, stride, (void*)(uintptr_t(offsetof(detail::UIVertex, roundness)))
+    glVertexAttribIPointer(
+        3, 1, GL_UNSIGNED_INT, stride, (void*)(uintptr_t(offsetof(detail::UIVertex, roundness)))
     );  // roundness
     glEnableVertexAttribArray(3);
     glVertexAttribIPointer(
         4, 1, GL_UNSIGNED_INT, stride, (void*)(uintptr_t(offsetof(detail::UIVertex, type)))
     );  // type
     glEnableVertexAttribArray(4);
+
+    glVertexAttribIPointer(
+        5,
+        1,
+        GL_UNSIGNED_INT,
+        stride,
+        (void*)(uintptr_t(offsetof(detail::UIVertex, borderThickness)))
+    );  // borderThickness
+    glEnableVertexAttribArray(5);
+    glVertexAttribPointer(
+        6, 3, GL_FLOAT, GL_FALSE, stride, (void*)(uintptr_t(offsetof(detail::UIVertex, borderColor)))
+    );  // borderColor
+    glEnableVertexAttribArray(6);
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -180,7 +193,7 @@ void OpenGLRendererImpl::afterRender() {
 
 
 detail::Quad OpenGLRendererImpl::makeQuad(
-    const glm::ivec4& posSize, const glm::vec4& color, float roundness
+    const glm::ivec4& posSize, const glm::vec4& color, unsigned int roundness
 ) const {
     glm::vec2 BL = {posSize.x, posSize.y + posSize.w};
     glm::vec2 BR = {posSize.x + posSize.z, posSize.y + posSize.w};
@@ -215,6 +228,8 @@ void OpenGLRendererImpl::renderPanel(const Panel& panel) {
 
     for (auto& vert : quad.vertices) {
         vert.type = detail::QuadType::Panel;
+        vert.borderThickness = style.borderThickness;
+        vert.borderColor = style.borderColor;
     }
     m_vertices.insert(m_vertices.end(), std::begin(quad.vertices), std::end(quad.vertices));
 }

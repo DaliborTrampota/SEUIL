@@ -20,7 +20,7 @@ namespace ui {
         // template <typename T>
         // virtual void renderStyledQuad(const Style<T>& style) const = 0;
         virtual detail::Quad makeQuad(
-            const glm::ivec4& posSize, const glm::vec4& color, float roundness
+            const glm::ivec4& posSize, const glm::vec4& color, unsigned int roundness = 0
         ) const = 0;
 
         virtual void render() = 0;
