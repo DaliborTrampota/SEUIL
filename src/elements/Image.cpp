@@ -14,6 +14,14 @@ ImageData::~ImageData() {
     stbi_image_free(data);
 }
 
+ImageData::ImageData(ImageData&& other) noexcept
+    : width(other.width),
+      height(other.height),
+      channels(other.channels),
+      data(other.data) {
+    other.data = nullptr;  // prevent double free
+}
+
 void Image::visit(Renderer& renderer) {
     renderer.renderImage(*this);
 }

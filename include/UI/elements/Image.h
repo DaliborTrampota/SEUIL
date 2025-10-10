@@ -20,7 +20,7 @@ namespace ui {
 
         ImageData() = default;
         // TODO move ctor
-        //ImageData(ImageData&& other) noexcept { data = other.data; }
+        ImageData(ImageData&& other) noexcept;
         ~ImageData();
     };
 
