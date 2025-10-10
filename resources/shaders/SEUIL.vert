@@ -8,6 +8,7 @@ layout (location = 4) in uint aType;
 
 layout (location = 5) in uint aBorderThickness;
 layout (location = 6) in vec3 aBorderColor;
+layout (location = 7) in uint aData;
 
 uniform vec2 uScreenSize;
 
@@ -18,6 +19,7 @@ flat out uint roundness;
 flat out uint type;
 flat out uint borderThickness;
 out vec4 borderColor;
+flat out uint data;
 
 void main()
 {
@@ -28,7 +30,8 @@ void main()
     roundness = aRoundness;
     borderThickness = aBorderThickness;
     borderColor = vec4(aBorderColor, color.a);
-
+    data = aData;
+    
     // Convert from [0, width] to [-1, 1]
     vec2 ndc = vec2(
         (pos.x / uScreenSize.x) * 2.0 - 1.0,

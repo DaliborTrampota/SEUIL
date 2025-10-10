@@ -11,8 +11,6 @@
 namespace ui {
 
     class Panel : public UIElement {
-        //friend class Renderer;
-
       public:
         template <typename U, typename V, typename S, typename T>
         Panel(

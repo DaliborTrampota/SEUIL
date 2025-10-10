@@ -5,11 +5,13 @@ file(GLOB_RECURSE INC_FILES CONFIGURE_DEPENDS include/UI/*.h)
 
 # Simple Enough UI Library
 add_library(seuil STATIC ${SRC_FILES})
+add_subdirectory(dependencies)
 # target_sources(lwgl PRIVATE ${INC_FILES})
 
 # target_link_libraries(seuil PRIVATE glfw)
 target_link_libraries(seuil PRIVATE glad)
 target_link_libraries(seuil PRIVATE glm)
+target_link_libraries(seuil PRIVATE dependencies)
 
 target_include_directories(
     seuil SYSTEM PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

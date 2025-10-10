@@ -5,7 +5,9 @@
 #include <glm/glm.hpp>
 #include <vector>
 
+#include "../src/detail/BindlessTextures.h"
 #include "../src/detail/Quad.h"
+
 
 namespace ui {
     class OpenGLRendererImpl : public RendererImpl {
@@ -15,6 +17,8 @@ namespace ui {
 
 
       private:
+        ui::BindlessTextures m_bindlessTextures;
+
         unsigned int m_fboID = 0;
         unsigned int m_fboTextureID = 0;
         unsigned int m_fboRenderbufferID = 0;
@@ -33,8 +37,10 @@ namespace ui {
 
         void render() override;
         void renderPanel(const Panel& panel) override;
-        unsigned int textureID() const override { return m_fboTextureID; }
+        void renderImage(const Image& image) override;
 
+        unsigned int textureID() const override { return m_fboTextureID; }
+        void loadImage(Image& image) override;
 
         void setupFBO();
         void setupShaders();

@@ -77,6 +77,8 @@ namespace ui {
     struct Style {};
 
     class Panel;
+    class Image;
+
     using ColorRGBA = glm::vec4;
     using ColorRGB = glm::vec3;
 
@@ -86,5 +88,11 @@ namespace ui {
         unsigned int roundRadius;
         unsigned int borderThickness;
         ColorRGB borderColor;  // Alpha is taken from bg color
+    };
+
+    template <>
+    struct Style<Image> {
+        unsigned int roundRadius;
+        float opacity;
     };
 }  // namespace ui

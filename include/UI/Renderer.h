@@ -3,11 +3,15 @@
 #include <glm/glm.hpp>
 #include <memory>
 
+#include "ImageDataMgr.h"
+
 namespace ui {
 
-    class Panel;
-    class UIElement;
     class RendererImpl;
+
+    class UIElement;
+    class Panel;
+    class Image;
 
     enum class RendererType {
         OpenGL,
@@ -25,8 +29,10 @@ namespace ui {
         void setViewportSize(const glm::ivec2& size);
 
         void renderPanel(Panel& panel);
+        void renderImage(Image& image);
 
         unsigned int textureID() const;
+        inline static ImageDataMgr imageDataMgr;
 
       protected:
         void setupFBO();
@@ -36,7 +42,6 @@ namespace ui {
         std::shared_ptr<Panel> m_root;
 
         bool m_dirty = false;
-
 
         void render();
         void layoutElement(UIElement& element, const glm::ivec4& parentDims);

@@ -2,6 +2,7 @@
 
 #include <glad/glad.h>
 
+#include <UI/elements/Image.h>
 #include <UI/elements/Panel.h>
 
 
@@ -13,6 +14,14 @@ using namespace ui;
 OpenGLRendererImpl::OpenGLRendererImpl(unsigned int fboID, const glm::ivec2& viewportSize)
     : m_fboID(fboID) {
     m_viewportSize = viewportSize;
+
+    // Check for ARB_bindless_texture support
+    if (glGetTextureHandleARB == nullptr || glMakeTextureHandleResidentARB == nullptr) {
+        printf("ERROR: GL_ARB_bindless_texture functions not loaded!\n");
+    } else {
+        printf("GL_ARB_bindless_texture functions are available\n");
+    }
+
     setupFBO();
     setupShaders();
     setupBuffer();
@@ -120,38 +129,7 @@ void OpenGLRendererImpl::setupBuffer() {
     glGenBuffers(1, &m_vboID);
     glBindBuffer(GL_ARRAY_BUFFER, m_vboID);
 
-    int stride = sizeof(detail::UIVertex);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, 0);  // pos
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(
-        1, 2, GL_FLOAT, GL_FALSE, stride, (void*)(uintptr_t(offsetof(detail::UIVertex, uv)))
-    );  // uv
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(
-        2, 4, GL_FLOAT, GL_FALSE, stride, (void*)(uintptr_t(offsetof(detail::UIVertex, color)))
-    );  // color
-    glEnableVertexAttribArray(2);
-    glVertexAttribIPointer(
-        3, 1, GL_UNSIGNED_INT, stride, (void*)(uintptr_t(offsetof(detail::UIVertex, roundness)))
-    );  // roundness
-    glEnableVertexAttribArray(3);
-    glVertexAttribIPointer(
-        4, 1, GL_UNSIGNED_INT, stride, (void*)(uintptr_t(offsetof(detail::UIVertex, type)))
-    );  // type
-    glEnableVertexAttribArray(4);
-
-    glVertexAttribIPointer(
-        5,
-        1,
-        GL_UNSIGNED_INT,
-        stride,
-        (void*)(uintptr_t(offsetof(detail::UIVertex, borderThickness)))
-    );  // borderThickness
-    glEnableVertexAttribArray(5);
-    glVertexAttribPointer(
-        6, 3, GL_FLOAT, GL_FALSE, stride, (void*)(uintptr_t(offsetof(detail::UIVertex, borderColor)))
-    );  // borderColor
-    glEnableVertexAttribArray(6);
+    detail::Quad::attributes();
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -179,6 +157,10 @@ void OpenGLRendererImpl::beforeRender() {
         m_vertices.data(),
         GL_DYNAMIC_DRAW
     );
+
+    // Update SSBO with texture handles (textures already made resident in loadImage)
+    m_bindlessTextures.update();
+    m_bindlessTextures.use();
 }
 
 void OpenGLRendererImpl::afterRender() {
@@ -217,7 +199,19 @@ void OpenGLRendererImpl::render() {
     beforeRender();
 
     if (m_vertices.size() > 0) {
+        // Verify SSBO binding
+        GLint boundSSBO = 0;
+        glGetIntegeri_v(GL_SHADER_STORAGE_BUFFER_BINDING, 0, &boundSSBO);
+        printf(
+            "Drawing %zu vertices, SSBO binding point 0 = buffer %d\n", m_vertices.size(), boundSSBO
+        );
+
         glDrawArrays(GL_TRIANGLES, 0, m_vertices.size());
+
+        GLenum err = glGetError();
+        if (err != GL_NO_ERROR) {
+            printf("GL Error after draw: 0x%x\n", err);
+        }
     }
 
     afterRender();
@@ -236,4 +230,44 @@ void OpenGLRendererImpl::renderPanel(const Panel& panel) {
         vert.borderColor = style.borderColor;
     }
     m_vertices.insert(m_vertices.end(), std::begin(quad.vertices), std::end(quad.vertices));
+}
+
+void OpenGLRendererImpl::renderImage(const Image& image) {
+    const auto& style = image.style_c();
+    detail::Quad quad =
+        makeQuad(image.m_calculatedDims, {1.0f, 1.0f, 1.0f, style.opacity}, style.roundRadius);
+
+    size_t idx = image.index();
+    printf("Rendering image with index %zu\n", idx);
+
+    for (auto& vert : quad.vertices) {
+        vert.type = detail::QuadType::Image;
+        vert.data = idx;
+    }
+    m_vertices.insert(m_vertices.end(), std::begin(quad.vertices), std::end(quad.vertices));
+}
+
+void OpenGLRendererImpl::loadImage(Image& image) {
+    const ImageData* textureData = image.textureData();
+
+    size_t idx = m_bindlessTextures.add(
+        textureData->data, textureData->width, textureData->height, textureData->channels, false
+    );
+
+    printf(
+        "Loaded image at index %zu, size: %dx%d, channels: %d\n",
+        idx,
+        textureData->width,
+        textureData->height,
+        textureData->channels
+    );
+
+    image.index(idx);
+    //m_bindlessTextures.use(idx);
+
+    // Check for GL errors
+    GLenum err = glGetError();
+    if (err != GL_NO_ERROR) {
+        printf("GL Error after making texture resident: 0x%x\n", err);
+    }
 }

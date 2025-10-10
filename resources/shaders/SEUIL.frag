@@ -1,4 +1,9 @@
-#version 330 core
+#version 450 core
+#extension GL_ARB_bindless_texture : require
+
+layout(std430, binding = 0) readonly buffer TextureHandles {
+    sampler2D uTextures[];
+};
 
 out vec4 FragColor;
 
@@ -9,6 +14,7 @@ flat in uint roundness;
 flat in uint type;
 flat in uint borderThickness;
 in vec4 borderColor;
+flat in uint data;
 
 
 bool perfectBorderRadius = true;
@@ -61,7 +67,14 @@ void renderRoundedCorners(uint r1, uint r2, vec2 panelSize, vec2 uvPixelPos, vec
 
 void main()
 {
-    FragColor = color;
+
+    if (type == uint(1)) { // Image
+        vec4 texColor = texture(uTextures[0], uv);
+        texColor.a = color.a;
+        FragColor = texColor;
+    } else {
+        FragColor = color;
+    }
     
     if (roundness > 0.0f) {
         // fwidth gives us the rate of change per screen pixel
