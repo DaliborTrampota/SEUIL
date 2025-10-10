@@ -1,5 +1,6 @@
-#include <UI/Panel.h>
 #include <UI/Renderer.h>
+#include <UI/elements/Panel.h>
+
 
 using namespace ui;
 

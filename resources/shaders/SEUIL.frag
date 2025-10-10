@@ -63,17 +63,14 @@ void main()
 {
     FragColor = color;
     
-    // discard pixels outside the rounded corners
     if (roundness > 0.0f) {
-        // Calculate panel dimensions in pixels using derivatives
         // fwidth gives us the rate of change per screen pixel
         vec2 uvDeriv = fwidth(uv);
-        
         // Estimate panel dimensions: if UV goes from 0 to 1, then 1.0 / derivative = dimension
         vec2 panelSize = 1.0 / uvDeriv;
-        
         // local pixel space (0 to panelSize)
         vec2 localPos = uv * panelSize;
+        
         renderRoundedCorners(roundness, borderThickness, panelSize, localPos, borderColor);
     }
 
@@ -87,7 +84,7 @@ void main()
         int bottom = int(localPos.y < borderThickness);
         int top = int(localPos.y > panelSize.y - borderThickness);
 
-        if (left + right + bottom + top == 1) {
+        if ((roundness == uint(0) && left + right + bottom + top > 0) || left + right + bottom + top == 1) {
             FragColor = borderColor;
         }
 

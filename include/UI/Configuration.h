@@ -5,18 +5,22 @@
 
 namespace ui {
 
-    enum class AnchorPoint {
-        None,
-        TopLeft,
-        TopRight,
-        MidTop,
-        MidLeft,
-        Mid,
-        MidRight,
-        MidBottom,
-        BottomLeft,
-        BottomRight,
+    enum class AnchorPoint : uint8_t {
+        None = 0,
+        Top = 1,
+        Bottom = 2,
+        Left = 4,
+        Right = 8,
+        Mid = 16,
+        TopLeft = Top | Left,
+        TopRight = Top | Right,
+        BottomLeft = Bottom | Left,
+        BottomRight = Bottom | Right,
     };
+
+    inline AnchorPoint operator&(AnchorPoint lhs, AnchorPoint rhs) {
+        return static_cast<AnchorPoint>(static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs));
+    }
 
     struct Base {
         float x, y;

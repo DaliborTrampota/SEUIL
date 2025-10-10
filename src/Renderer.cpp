@@ -1,7 +1,7 @@
 #include <UI/Renderer.h>
 
 #include <UI/OpenGLRendererImpl.h>
-#include <UI/Panel.h>
+#include <UI/elements/Panel.h>
 
 
 #include <glad/glad.h>

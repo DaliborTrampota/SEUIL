@@ -2,7 +2,8 @@
 
 #include <glad/glad.h>
 
-#include <UI/Panel.h>
+#include <UI/elements/Panel.h>
+
 
 #include "../src/detail/Quad.h"
 #include "../src/detail/Shader.h"
@@ -224,6 +225,9 @@ void OpenGLRendererImpl::render() {
 
 void OpenGLRendererImpl::renderPanel(const Panel& panel) {
     const auto& style = panel.style_c();
+    if (style.backgroundColor.a == 0.f)
+        return;
+
     detail::Quad quad = makeQuad(panel.m_calculatedDims, style.backgroundColor, style.roundRadius);
 
     for (auto& vert : quad.vertices) {

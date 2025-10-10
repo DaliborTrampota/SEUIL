@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Configuration.h"
-#include "EventState.h"
+#include "../Configuration.h"
+#include "../EventState.h"
 #include "UIElement.h"
 
 #include <memory>
@@ -18,7 +18,7 @@ namespace ui {
         Panel(
             Pos<U, V> position,
             Size<S, T> size,
-            Style<Panel> style,
+            Style<Panel> style = {},
             AnchorPoint anchorPoint = AnchorPoint::None
         )
             : UIElement(position, size, anchorPoint),
