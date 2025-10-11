@@ -2,7 +2,7 @@
 #extension GL_ARB_bindless_texture : require
 
 layout(std430, binding = 0) readonly buffer TextureHandles {
-    sampler2D uTextures[];
+    sampler2D images[];
 };
 
 out vec4 FragColor;
@@ -69,9 +69,7 @@ void main()
 {
 
     if (type == uint(1)) { // Image
-        vec4 texColor = texture(uTextures[0], uv);
-        texColor.a = color.a;
-        FragColor = texColor;
+        FragColor = vec4(texture(images[0], uv).rgb, color.a);
     } else {
         FragColor = color;
     }

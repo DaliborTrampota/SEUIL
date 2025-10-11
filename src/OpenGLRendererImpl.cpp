@@ -158,14 +158,13 @@ void OpenGLRendererImpl::beforeRender() {
         GL_DYNAMIC_DRAW
     );
 
-    // Update SSBO with texture handles (textures already made resident in loadImage)
-    m_bindlessTextures.update();
     m_bindlessTextures.use();
+    m_bindlessTextures.update();
 }
 
 void OpenGLRendererImpl::afterRender() {
     m_vertices.clear();
-
+    m_bindlessTextures.unload();  // Unload because we dont render UI every frame
     // Restore OpenGL state
     glDisable(GL_BLEND);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -199,13 +198,6 @@ void OpenGLRendererImpl::render() {
     beforeRender();
 
     if (m_vertices.size() > 0) {
-        // Verify SSBO binding
-        GLint boundSSBO = 0;
-        glGetIntegeri_v(GL_SHADER_STORAGE_BUFFER_BINDING, 0, &boundSSBO);
-        printf(
-            "Drawing %zu vertices, SSBO binding point 0 = buffer %d\n", m_vertices.size(), boundSSBO
-        );
-
         glDrawArrays(GL_TRIANGLES, 0, m_vertices.size());
 
         GLenum err = glGetError();
@@ -238,7 +230,6 @@ void OpenGLRendererImpl::renderImage(const Image& image) {
         makeQuad(image.m_calculatedDims, {1.0f, 1.0f, 1.0f, style.opacity}, style.roundRadius);
 
     size_t idx = image.index();
-    printf("Rendering image with index %zu\n", idx);
 
     for (auto& vert : quad.vertices) {
         vert.type = detail::QuadType::Image;
@@ -251,7 +242,11 @@ void OpenGLRendererImpl::loadImage(Image& image) {
     const ImageData* textureData = image.textureData();
 
     size_t idx = m_bindlessTextures.add(
-        textureData->data, textureData->width, textureData->height, textureData->channels, false
+        textureData->data,
+        textureData->width,
+        textureData->height,
+        textureData->channels,
+        image.style_c().pixelated
     );
 
     printf(
@@ -263,11 +258,4 @@ void OpenGLRendererImpl::loadImage(Image& image) {
     );
 
     image.index(idx);
-    //m_bindlessTextures.use(idx);
-
-    // Check for GL errors
-    GLenum err = glGetError();
-    if (err != GL_NO_ERROR) {
-        printf("GL Error after making texture resident: 0x%x\n", err);
-    }
 }

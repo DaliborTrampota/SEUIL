@@ -94,5 +94,6 @@ namespace ui {
     struct Style<Image> {
         unsigned int roundRadius;
         float opacity;
+        bool pixelated;
     };
 }  // namespace ui

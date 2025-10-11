@@ -8,6 +8,7 @@ using namespace ui;
 
 BindlessTextures::BindlessTextures() {
     glGenBuffers(1, &m_ssboID);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_ssboID);
     update();
 }
 
@@ -18,8 +19,6 @@ size_t BindlessTextures::add(
     glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, tex);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, pixelated ? GL_NEAREST : GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, pixelated ? GL_NEAREST : GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -51,13 +50,8 @@ size_t BindlessTextures::add(
         GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, data
     );
 
-    GLenum err = glGetError();
-    if (err != GL_NO_ERROR) {
-        printf("GL Error after glTexImage2D: 0x%x\n", err);
-    }
-
     GLuint64 handle = glGetTextureHandleARB(tex);
-    printf("Got texture handle: 0x%llx for texID=%u\n", handle, tex);
+    //glMakeTextureHandleResidentARB(handle);
 
     m_textureHandles.push_back(handle);
     m_textures.push_back(tex);
@@ -102,23 +96,12 @@ void BindlessTextures::setUniform(const char* name, int index, unsigned int prog
 
 void BindlessTextures::update() {
     if (m_dirty) {
-        printf("Updating SSBO with %zu texture handles\n", m_textureHandles.size());
-        for (size_t i = 0; i < m_textureHandles.size(); i++) {
-            printf("  Handle[%zu] = 0x%llx\n", i, m_textureHandles[i]);
-        }
         glNamedBufferData(
             m_ssboID,
             sizeof(GLuint64) * m_textureHandles.size(),
             m_textureHandles.data(),
             GL_DYNAMIC_DRAW
         );
-
-
-        GLuint64 gpuHandle = 0;
-        glGetNamedBufferSubData(m_ssboID, 0, sizeof(GLuint64), &gpuHandle);
-        printf("SSBO[0] = 0x%llx\n", gpuHandle);
         m_dirty = false;
     }
-    // Always bind SSBO before rendering
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_ssboID);
 }
