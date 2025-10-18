@@ -37,8 +37,8 @@ glm::ivec4 UIElement::calculateSizeAndPosition(const glm::ivec4& parentPosSize) 
     // TODO anchor point
     std::visit(
         [this, &parentPosSize](auto& pos) {
-            adjustAnchorPoint(m_anchorPoint, m_calculatedDims, parentPosSize);
-            glm::ivec2 modifier = anchorPointModifier(m_anchorPoint);
+            glm::ivec2 modifier = adjustAnchorPoint(m_anchorPoint, m_calculatedDims, parentPosSize);
+
             using T = std::decay_t<decltype(pos)>;
             if constexpr (std::is_same_v<T, Pos<Rel, Abs>>) {
                 m_calculatedDims.x += parentPosSize.z * pos.x * modifier.x + parentPosSize.x;
@@ -61,11 +61,11 @@ glm::ivec4 UIElement::calculateSizeAndPosition(const glm::ivec4& parentPosSize) 
 }
 
 
-void UIElement::adjustAnchorPoint(
+glm::ivec2 UIElement::adjustAnchorPoint(
     AnchorPoint anchor, glm::ivec4& posSize, const glm::ivec4& parentPosSize
 ) const {
     if (anchor == AnchorPoint::None)
-        return;
+        return {1.f, 1.f};
 
     bool top = static_cast<uint8_t>(anchor & AnchorPoint::Top);
     bool bottom = static_cast<uint8_t>(anchor & AnchorPoint::Bottom);
@@ -93,11 +93,6 @@ void UIElement::adjustAnchorPoint(
 
     if (right)
         posSize.x = parentPosSize.z - posSize.z;
-}
-
-glm::ivec2 UIElement::anchorPointModifier(AnchorPoint anchor) const {
-    bool bottom = static_cast<uint8_t>(anchor & AnchorPoint::Bottom);
-    bool right = static_cast<uint8_t>(anchor & AnchorPoint::Right);
 
     return {right ? -1 : 1, bottom ? -1 : 1};
 }

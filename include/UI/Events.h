@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstdint>
+#include <glm/glm.hpp>
+
 namespace ui {
     enum class EventState {
         None,
@@ -7,4 +10,6 @@ namespace ui {
         Pressed,
         Released,
     };
+
+
 }  // namespace ui

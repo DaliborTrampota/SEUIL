@@ -9,11 +9,15 @@ out vec4 FragColor;
 
 in vec3 pos;
 in vec2 uv;
-in vec4 color;
-flat in uint roundness;
 flat in uint type;
+flat in uint roundness;
 flat in uint borderThickness;
+
+in vec4 color;
 in vec4 borderColor;
+in vec4 hoverColor;
+in vec4 pressedColor;
+
 flat in uint data;
 
 
@@ -22,7 +26,6 @@ bool perfectBorderRadius = true;
 uniform float time;
 
 void renderRoundedCorners(uint r1, uint r2, vec2 panelSize, vec2 uvPixelPos, vec4 color) {
-
     if (perfectBorderRadius)
         r2 = r1 - borderThickness;
 
@@ -36,7 +39,6 @@ void renderRoundedCorners(uint r1, uint r2, vec2 panelSize, vec2 uvPixelPos, vec
     vec2 cornerBL = vec2(1, 1);
     vec2 cornerBR = vec2(-1, 1);
     
-    uint r = r1 + r2;
     if (uvPixelPos.x < r1 && uvPixelPos.y > panelSize.y - r1) {
         if (distance(uvPixelPos, TL + cornerTL * r1) > r2) 
             FragColor = color;
@@ -90,12 +92,10 @@ void main()
         vec2 panelSize = 1.0 / uvDeriv;
         vec2 localPos = uv * panelSize;
 
-        int left = int(localPos.x < borderThickness);
-        int right = int(localPos.x > panelSize.x - borderThickness);
-        int bottom = int(localPos.y < borderThickness);
-        int top = int(localPos.y > panelSize.y - borderThickness);
-
-        if ((roundness == uint(0) && left + right + bottom + top > 0) || left + right + bottom + top == 1) {
+        if (localPos.x < borderThickness || 
+            localPos.x > panelSize.x - borderThickness || 
+            localPos.y < borderThickness || 
+            localPos.y > panelSize.y - borderThickness) {
             FragColor = borderColor;
         }
 

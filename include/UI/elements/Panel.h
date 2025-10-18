@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../Configuration.h"
-#include "../EventState.h"
+#include "../Events.h"
 #include "UIElement.h"
 
 #include <memory>
@@ -25,6 +25,8 @@ namespace ui {
         /// @brief Adds a child element to the panel.
         /// @param child The child element to add.
         void addChild(std::shared_ptr<UIElement> child);
+
+        /// @return The children of the panel.
         std::vector<std::shared_ptr<UIElement>>& children() { return m_children; }
 
         void mouseMove(const glm::ivec2& pos) override;

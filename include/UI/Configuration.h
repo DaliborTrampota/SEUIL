@@ -27,7 +27,7 @@ namespace ui {
     };
 
     template <typename U, typename V>
-    struct Pos {};
+    struct Pos;
 
     struct Rel;
     struct Abs;
@@ -54,7 +54,7 @@ namespace ui {
 
 
     template <typename U, typename V>
-    struct Size {};
+    struct Size;
 
     template <>
     struct Size<Abs, Abs> : public Base {};
@@ -74,10 +74,11 @@ namespace ui {
 
 
     template <typename T>
-    struct Style {};
+    struct Style;
 
     class Panel;
     class Image;
+    class Button;
 
     using ColorRGBA = glm::vec4;
     using ColorRGB = glm::vec3;
@@ -95,5 +96,17 @@ namespace ui {
         unsigned int roundRadius;
         float opacity;
         bool pixelated;
+    };
+
+    template <>
+    struct Style<Button> {
+        ColorRGBA backgroundColor;
+        unsigned int roundRadius;
+        unsigned int borderThickness;
+        ColorRGB borderColor;
+        ColorRGB textColor;
+        ColorRGB textHoverColor;
+        ColorRGBA pressedColor;
+        ColorRGBA hoveredColor;
     };
 }  // namespace ui

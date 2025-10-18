@@ -44,10 +44,14 @@ namespace ui {
         /// @param parentPosSize The position and size of the parent element.
         /// @return The dimensions of the element. (x = pos.x, y = pos.y, z = size.x, w = size.y)
         glm::ivec4 calculateSizeAndPosition(const glm::ivec4& parentPosSize);
-        void adjustAnchorPoint(
+
+        /// @brief Adjusts the m_calculatedDims based on the anchor point of the element.
+        /// @param anchor The anchor point of the element.
+        /// @param posSize The position and size of the element.
+        /// @param parentPosSize The position and size of the parent element.
+        /// @return The position direction modifier for x and y.
+        glm::ivec2 adjustAnchorPoint(
             AnchorPoint anchor, glm::ivec4& posSize, const glm::ivec4& parentPosSize
         ) const;
-
-        glm::ivec2 anchorPointModifier(AnchorPoint anchor) const;
     };
 }  // namespace ui

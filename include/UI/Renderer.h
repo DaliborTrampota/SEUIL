@@ -30,6 +30,7 @@ namespace ui {
 
         void renderPanel(Panel& panel);
         void renderImage(Image& image);
+        void renderButton(Button& button);
 
         unsigned int textureID() const;
         inline static ImageDataMgr imageDataMgr;

@@ -3,23 +3,33 @@
 
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aUV;
-layout (location = 2) in vec4 aColor;
-layout (location = 3) in uint aRoundness;
-layout (location = 4) in uint aType;
+layout (location = 2) in uint aColorIndex; // index into SSBO or for image the alpha value
+layout (location = 3) in uint aType;
+layout (location = 4) in uvec3 aBorder; // roundness, border thickness, border color index
 
-layout (location = 5) in uint aBorderThickness;
-layout (location = 6) in vec3 aBorderColor;
-layout (location = 7) in uint aData;
+// Image: the texture index for image in frag shader
+// Button: the button state (0: normal, 1: hovered, 2: pressed)
+layout (location = 6) in uint aData; 
+
+layout (location = 7) in uvec3 aButtonColorIndices;
+
+layout (std430, binding = 1) readonly buffer Colors {
+    vec4 colorPalette[];
+};
 
 uniform vec2 uScreenSize;
 
 out vec3 pos;
 out vec2 uv;
-out vec4 color;
-flat out uint roundness;
 flat out uint type;
+flat out uint roundness;
 flat out uint borderThickness;
-out vec4 borderColor;
+
+flat out vec4 color;
+flat out vec4 borderColor;
+flat out vec4 hoverColor;
+flat out vec4 pressedColor;
+
 flat out uint data;
 
 void main()
@@ -27,11 +37,20 @@ void main()
     type = aType;
     uv = aUV;
     pos = aPos;
-    color = aColor;
-    roundness = aRoundness;
-    borderThickness = aBorderThickness;
-    borderColor = vec4(aBorderColor, color.a);
+    roundness = aBorder.x;
+    borderThickness = aBorder.y;
     data = aData;
+
+    if (type == uint(1)) { // Image, data is the alpha value
+        color = vec4(1.0, 1.0, 1.0, data);
+    } else {
+        color = colorPalette[aColorIndex];
+    }
+
+    borderColor = vec4(colorPalette[aBorder.z].rgb, color.a);
+    hoverColor = colorPalette[aButtonColorIndices.x];
+    pressedColor = colorPalette[aButtonColorIndices.y];
+
     
     // Convert from [0, width] to [-1, 1]
     vec2 ndc = vec2(

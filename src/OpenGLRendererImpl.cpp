@@ -2,6 +2,7 @@
 
 #include <glad/glad.h>
 
+#include <UI/elements/Button.h>
 #include <UI/elements/Image.h>
 #include <UI/elements/Panel.h>
 
@@ -11,8 +12,20 @@
 
 using namespace ui;
 
+
+unsigned int OpenGLRendererImpl::findOrStoreColor(const glm::vec4& color) {
+    const std::vector<glm::vec4>& data = m_shaderColors.data();
+    auto it = std::find(data.begin(), data.end(), color);
+    if (it == data.end()) {
+        m_shaderColors.add(color);
+        return data.size() - 1;
+    }
+    return std::distance(data.begin(), it);
+}
+
 OpenGLRendererImpl::OpenGLRendererImpl(unsigned int fboID, const glm::ivec2& viewportSize)
-    : m_fboID(fboID) {
+    : m_fboID(fboID),
+      m_shaderColors(1) {
     m_viewportSize = viewportSize;
 
     // Check for ARB_bindless_texture support
@@ -133,6 +146,8 @@ void OpenGLRendererImpl::setupBuffer() {
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    m_shaderColors.create({});
 }
 
 
@@ -160,11 +175,14 @@ void OpenGLRendererImpl::beforeRender() {
 
     m_bindlessTextures.use();
     m_bindlessTextures.update();
+    m_shaderColors.bind();
 }
 
 void OpenGLRendererImpl::afterRender() {
     m_vertices.clear();
     m_bindlessTextures.unload();  // Unload because we dont render UI every frame
+    m_shaderColors.unbind();
+
     // Restore OpenGL state
     glDisable(GL_BLEND);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -172,27 +190,6 @@ void OpenGLRendererImpl::afterRender() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glUseProgram(0);
 }
-
-
-detail::Quad OpenGLRendererImpl::makeQuad(
-    const glm::ivec4& posSize, const glm::vec4& color, unsigned int roundness
-) const {
-    glm::vec2 BL = {posSize.x, posSize.y + posSize.w};
-    glm::vec2 BR = {posSize.x + posSize.z, posSize.y + posSize.w};
-    glm::vec2 TL = {posSize.x, posSize.y};
-    glm::vec2 TR = {posSize.x + posSize.z, posSize.y};
-
-    detail::Quad quad;
-    quad.vertices[0] = {BR, glm::vec2(1.0f, 0.0f), color, roundness};
-    quad.vertices[1] = {TL, glm::vec2(0.0f, 1.0f), color, roundness};
-    quad.vertices[2] = {BL, glm::vec2(0.0f, 0.0f), color, roundness};
-    quad.vertices[3] = {TL, glm::vec2(0.0f, 1.0f), color, roundness};
-    quad.vertices[4] = {BR, glm::vec2(1.0f, 0.0f), color, roundness};
-    quad.vertices[5] = {TR, glm::vec2(1.0f, 1.0f), color, roundness};
-
-    return quad;
-}
-
 
 void OpenGLRendererImpl::render() {
     beforeRender();
@@ -209,34 +206,84 @@ void OpenGLRendererImpl::render() {
     afterRender();
 }
 
+detail::Quad OpenGLRendererImpl::makeQuad(const glm::ivec4& posSize) const {
+    glm::vec2 BL = {posSize.x, posSize.y + posSize.w};
+    glm::vec2 BR = {posSize.x + posSize.z, posSize.y + posSize.w};
+    glm::vec2 TL = {posSize.x, posSize.y};
+    glm::vec2 TR = {posSize.x + posSize.z, posSize.y};
+
+    detail::Quad quad;
+    quad.vertices[0] = {BR, glm::vec2(1.0f, 0.0f)};
+    quad.vertices[1] = {TL, glm::vec2(0.0f, 1.0f)};
+    quad.vertices[2] = {BL, glm::vec2(0.0f, 0.0f)};
+    quad.vertices[3] = {TL, glm::vec2(0.0f, 1.0f)};
+    quad.vertices[4] = {BR, glm::vec2(1.0f, 0.0f)};
+    quad.vertices[5] = {TR, glm::vec2(1.0f, 1.0f)};
+
+    return quad;
+}
+
+
 void OpenGLRendererImpl::renderPanel(const Panel& panel) {
     const auto& style = panel.style_c();
     if (style.backgroundColor.a == 0.f)
         return;
 
-    detail::Quad quad = makeQuad(panel.m_calculatedDims, style.backgroundColor, style.roundRadius);
+    detail::Quad quad = makeQuad(panel.m_calculatedDims);
+
+    unsigned int colorIndex = findOrStoreColor(style.backgroundColor);
+    unsigned int borderColorIndex = findOrStoreColor({style.borderColor, 1.f});
 
     for (auto& vert : quad.vertices) {
+        vert.colorIndex = colorIndex;
         vert.type = detail::QuadType::Panel;
-        vert.borderThickness = style.borderThickness;
-        vert.borderColor = style.borderColor;
+        vert.borderData = {style.roundRadius, style.borderThickness, borderColorIndex};
     }
     m_vertices.insert(m_vertices.end(), std::begin(quad.vertices), std::end(quad.vertices));
 }
 
-void OpenGLRendererImpl::renderImage(const Image& image) {
+void OpenGLRendererImpl::renderImage(
+    const Image& image
+) {  // TODO dont add the color into SSBO since its always 1.0f
     const auto& style = image.style_c();
-    detail::Quad quad =
-        makeQuad(image.m_calculatedDims, {1.0f, 1.0f, 1.0f, style.opacity}, style.roundRadius);
+    if (style.opacity == 0.f)
+        return;
+
+    detail::Quad quad = makeQuad(image.m_calculatedDims);
 
     size_t idx = image.index();
 
     for (auto& vert : quad.vertices) {
+        vert.borderData = {style.roundRadius, 0, 0};
         vert.type = detail::QuadType::Image;
         vert.data = idx;
+        vert.colorIndex = style.opacity;
     }
     m_vertices.insert(m_vertices.end(), std::begin(quad.vertices), std::end(quad.vertices));
 }
+
+void OpenGLRendererImpl::renderButton(const Button& button) {
+    const auto& style = button.style_c();
+
+    detail::Quad quad = makeQuad(button.m_calculatedDims);
+
+    unsigned int colorIndex = findOrStoreColor(style.backgroundColor);
+    unsigned int hoverIndex = findOrStoreColor(style.hoveredColor);
+    unsigned int pressedIndex = findOrStoreColor(style.pressedColor);
+    // unsigned int textIndex = findOrStoreColor(style.textColor);
+    // unsigned int textHoverIndex = findOrStoreColor(style.textHoverColor);
+
+    unsigned int borderColorIndex = findOrStoreColor({style.borderColor, 1.f});
+
+    for (auto& vert : quad.vertices) {
+        vert.borderData = {style.roundRadius, style.borderThickness, borderColorIndex};
+        vert.type = detail::QuadType::Button;
+        vert.data = button.isHovered() ? 1 : button.isPressed() ? 2 : 0;
+        vert.colorIndex = colorIndex;
+    }
+    m_vertices.insert(m_vertices.end(), std::begin(quad.vertices), std::end(quad.vertices));
+}
+
 
 void OpenGLRendererImpl::loadImage(Image& image) {
     const ImageData* textureData = image.textureData();

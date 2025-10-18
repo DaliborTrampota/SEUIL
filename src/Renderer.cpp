@@ -1,6 +1,7 @@
 #include <UI/Renderer.h>
 
 #include <UI/OpenGLRendererImpl.h>
+#include <UI/Events.h>
 #include <UI/elements/Panel.h>
 
 
@@ -18,8 +19,8 @@ Renderer::Renderer(RendererType type, const glm::ivec2& viewportSize) {
 
 Renderer::~Renderer() {}
 
-void Renderer::mouseMove(const glm::ivec2& pos) {
-    m_root->mouseMove(pos);
+void Renderer::mouseEvent(const MouseEvent& event) {
+    m_root->mouseEvent(event);
 }
 
 void Renderer::update(float dt) {
@@ -80,4 +81,8 @@ void Renderer::renderPanel(Panel& panel) {
 
 void Renderer::renderImage(Image& image) {
     m_impl->renderImage(image);
+}
+
+void Renderer::renderButton(Button& button) {
+    m_impl->renderButton(button);
 }
