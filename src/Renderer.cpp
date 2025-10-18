@@ -1,8 +1,8 @@
 #include <UI/Renderer.h>
 
-#include <UI/OpenGLRendererImpl.h>
 #include <UI/Events.h>
 #include <UI/elements/Panel.h>
+#include "../src/OpenGLRendererImpl.h"
 
 
 #include <glad/glad.h>
