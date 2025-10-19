@@ -1,0 +1,35 @@
+SEUIL - Simple Enough UI Library
+Copyright 2025 SEUIL Contributors
+
+This product includes software developed by third parties:
+
+================================================================================
+FreeType
+Copyright 1996-2002, 2006 by David Turner, Robert Wilhelm, and Werner Lemberg
+License: FreeType License (FTL)
+https://www.freetype.org/license.html
+
+================================================================================
+stb_image
+Copyright (c) 2017 Sean Barrett
+License: MIT License or Public Domain
+https://github.com/nothings/stb
+
+================================================================================
+GLM (OpenGL Mathematics)
+Copyright (c) 2005 - G-Truc Creation
+License: MIT License
+https://github.com/g-truc/glm
+
+================================================================================
+GLFW
+Copyright (c) 2002-2006 Marcus Geelnard
+Copyright (c) 2006-2019 Camilla Löwy
+License: zlib/libpng License
+https://www.glfw.org/
+
+================================================================================
+GLAD
+License: Public Domain / MIT License
+https://github.com/Dav1dde/glad
+
