@@ -43,6 +43,41 @@ setup_seuil_resource_copy(your_target)
 
 ### Basic Usage
 
+Before calling `Renderer::update` it is important that cursor creation function is registered to `Renderer` via `Renderer::registerCursorFunction`
+
+Such implementation can look like this with GLFW
+
+```cpp
+Renderer::registerCursorFunction([](CursorType type) {
+    switch (type) {
+        case CursorType::Pointer:
+            if (s_currentCursor) {
+                glfwDestroyCursor(s_currentCursor);
+                s_currentCursor = nullptr;
+            }
+            s_currentCursor = glfwCreateStandardCursor(GLFW_HAND_CURSOR);
+            glfwSetCursor(glfwGetCurrentContext(), s_currentCursor);
+            break;
+        case CursorType::Default:
+            if (s_currentCursor) {
+                glfwDestroyCursor(s_currentCursor);
+                s_currentCursor = nullptr;
+            }
+            //s_currentCursor = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
+            //glfwSetCursor(glfwGetCurrentContext(), s_currentCursor);
+            break;
+        case CursorType::Type:
+            if (s_currentCursor) {
+                glfwDestroyCursor(s_currentCursor);
+                s_currentCursor = nullptr;
+            }
+            s_currentCursor = glfwCreateStandardCursor(GLFW_IBEAM_CURSOR);
+            glfwSetCursor(glfwGetCurrentContext(), s_currentCursor);
+            break;
+    }
+});
+```
+
 ```cpp
 #include <UI/Renderer.h>
 #include <UI/elements/Panel.h>
@@ -55,12 +90,7 @@ ui::Renderer renderer(ui::RendererType::OpenGL, {1920, 1080});
 auto root = std::make_shared<ui::Panel>(
     ui::Pos<ui::Abs, ui::Abs>{0, 0},
     ui::Size<ui::Rel, ui::Rel>{1.0f, 1.0f},
-    ui::Style<ui::Panel>{
-        .backgroundColor = {0.1f, 0.1f, 0.1f, 1.0f},
-        .roundRadius = 0,
-        .borderThickness = 0,
-        .borderColor = {1.0f, 1.0f, 1.0f}
-    }
+    ui::Style<ui::Panel>{}
 );
 
 // Create a centered child panel
@@ -68,10 +98,7 @@ auto panel = std::make_shared<ui::Panel>(
     ui::Pos<ui::Rel, ui::Rel>{0.5f, 0.5f},
     ui::Size<ui::Abs, ui::Abs>{400, 300},
     ui::Style<ui::Panel>{
-        .backgroundColor = {0.2f, 0.2f, 0.2f, 0.9f},
-        .roundRadius = 10,
-        .borderThickness = 2,
-        .borderColor = {0.5f, 0.5f, 0.5f}
+        .backgroundColor = {0.2f, 0.2f, 0.2f, 0.9f}
     },
     ui::AnchorPoint::Mid  // Center anchor point
 );
@@ -103,6 +130,7 @@ renderer.setRoot(root);
 renderer.update(deltaTime);
 
 // Handle mouse events:
+// You have to call mouseEvent on Renderer whenever mouse is moved or pressed
 ui::MouseEvent event{
     .type = ui::MouseEvent::LMB,
     .pos = {mouseX, mouseY}
@@ -152,7 +180,7 @@ SEUIL uses a signal-slot pattern for event handling:
 ```cpp
 // Available signals
 element->hoverSignal.connect([](const ui::MouseEvent& e) { /* ... */ });
-button->pressedSignal.connect([](const ui::MouseEvent& e) { /* ... */ });
+button->pressedSignal.connect([](const ui::ButtonEvent& e) { /* ... */ });
 
 // Mouse event types
 ui::MouseEvent::Move       // Mouse movement

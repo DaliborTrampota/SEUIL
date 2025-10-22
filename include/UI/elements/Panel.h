@@ -29,7 +29,7 @@ namespace ui {
         /// @return The children of the panel.
         std::vector<std::shared_ptr<UIElement>>& children() { return m_children; }
 
-        void mouseMove(const glm::ivec2& pos) override;
+        void mouseEvent(const MouseEvent& event) override;
 
         // moved it from private to public and removed friend, should it be in public?
         void visit(Renderer& renderer) override;
@@ -39,11 +39,8 @@ namespace ui {
 
       protected:
         Style<Panel> m_style;
-
-        bool m_hoverEvent = false;
-        EventState m_eventState = EventState::None;
-
         std::shared_ptr<Panel> m_parent = nullptr;
+
         std::vector<std::shared_ptr<UIElement>> m_children;
     };
 

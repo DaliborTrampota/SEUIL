@@ -5,6 +5,7 @@
 #include "../Events.h"
 #include "UIElement.h"
 
+struct GLFWcursor;
 
 namespace ui {
     class Button : public UIElement {
@@ -30,11 +31,14 @@ namespace ui {
         bool isPressed() const;
         bool isHovered() const;
 
+        Signal<const ButtonEvent&> pressedSignal;
+        Signal<const ButtonEvent&> releasedSignal;
 
       protected:
         Style<Button> m_style;
         std::shared_ptr<UIElement> m_parent = nullptr;
-        EventState m_eventState = EventState::None;
+
+        inline static GLFWcursor* s_pointerCursor = nullptr;
     };
 
 };  // namespace ui

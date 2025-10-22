@@ -39,7 +39,7 @@ namespace ui {
             loadTexture(texturePath);
         }
 
-        void mouseMove(const glm::ivec2& pos) override;
+        //void mouseEvent(const MouseEvent& event) override {};
         void visit(Renderer& renderer) override;
 
         Style<Image>& style() { return m_style; }
@@ -53,10 +53,6 @@ namespace ui {
 
       protected:
         Style<Image> m_style;
-
-        bool m_hoverEvent = false;
-        EventState m_eventState = EventState::None;
-
         std::shared_ptr<Panel> m_parent = nullptr;
 
         const ImageData* m_textureData = nullptr;

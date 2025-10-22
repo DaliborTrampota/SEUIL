@@ -9,21 +9,17 @@ void Panel::addChild(std::shared_ptr<UIElement> child) {
     m_children.push_back(std::move(child));
 }
 
-void Panel::mouseMove(const glm::ivec2& pos) {
-    if (contains(pos)) {
-        if (m_eventState == EventState::None) {
-            // trigger enter
-            if (m_hoverEvent) {
-                // trigger hover event
-            }
-            m_eventState = EventState::Hovered;
-        } else if (m_hoverEvent) {
-            // trigger hover event
-        }
-    } else {
-        if (m_eventState == EventState::Hovered) {
-            // trigger leave event
-            m_eventState = EventState::None;
+void Panel::mouseEvent(const MouseEvent& event) {
+    UIElement::mouseEvent(event);
+
+    for (auto& child : m_children) {
+        EventState chState = child->state();
+        if (child->contains(event.pos)) {
+            child->mouseEvent(event);
+        } else if ((event.action == Action::Move && chState != EventState::None) ||
+                   (event.action == Action::Release && chState == EventState::Pressed)) {
+            // Hovering panel but not child -> Trigger hover stop and exit
+            child->mouseEvent(event);
         }
     }
 }

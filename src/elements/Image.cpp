@@ -26,11 +26,6 @@ void Image::visit(Renderer& renderer) {
     renderer.renderImage(*this);
 }
 
-void Image::mouseMove(const glm::ivec2& pos) {
-    //m_hoverEvent = contains(glm::vec2(pos));
-}
-
-
 void Image::loadTexture(const std::string& texturePath) {
     if ((m_textureData = Renderer::imageDataMgr.get(texturePath)))
         return;

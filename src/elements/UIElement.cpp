@@ -1,5 +1,7 @@
 #include <UI/elements/UIElement.h>
 
+#include <UI/Events.h>
+
 using namespace ui;
 
 bool UIElement::contains(const glm::vec2& point) const {
@@ -95,4 +97,26 @@ glm::ivec2 UIElement::adjustAnchorPoint(
         posSize.x = parentPosSize.z - posSize.z;
 
     return {right ? -1 : 1, bottom ? -1 : 1};
+}
+
+void UIElement::mouseEvent(const MouseEvent& event) {
+    if (event.action == Action::Move) {
+        if (contains(event.pos)) {
+            HoverEvent ev{.hoverStart = true, .pos = event.pos};
+            if (m_eventState == EventState::None) {
+                m_eventState = EventState::Hovered;
+                enterSignal.emit(ev);
+                hoverSignal.emit(ev);
+            } else {
+                ev.hoverStart = false;
+                hoverSignal.emit(ev);
+            }
+        } else {
+            if (m_eventState == EventState::Hovered) {
+                m_eventState = EventState::None;
+                HoverEvent ev{.hoverStart = false, .pos = event.pos};
+                exitSignal.emit(ev);
+            }
+        }
+    }
 }

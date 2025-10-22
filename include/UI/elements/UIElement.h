@@ -4,6 +4,8 @@
 #include <variant>
 
 #include "../Configuration.h"
+#include "../Signal.h"
+#include "../Events.h"
 
 namespace ui {
     class Renderer;
@@ -22,20 +24,32 @@ namespace ui {
 
         virtual ~UIElement() = default;
 
-        virtual void mouseMove(const glm::ivec2& pos) = 0;
+        /// @brief Should be called when any mouse event occurs on the root element. Propagates to children. Triggers events.
+        /// @param event The mouse event.
+        virtual void mouseEvent(const MouseEvent& event);
+
+        /// @brief called by the Renderer when the element is rendered.
+        /// @param renderer The renderer.
+        virtual void visit(Renderer& renderer) = 0;
 
         /// @brief Checks if the panel contains a point, eg. mouse position.
         /// @param point The point to check.
         /// @return True if the panel contains the point, false otherwise.
         bool contains(const glm::vec2& point) const;
 
-        virtual void visit(Renderer& renderer) = 0;
+        EventState state() const { return m_eventState; };
+
+        Signal<const HoverEvent&> hoverSignal;
+        Signal<const HoverEvent&> enterSignal;
+        Signal<const HoverEvent&> exitSignal;
 
       protected:
         AnchorPoint m_anchorPoint;
         Positions m_position;
         Sizes m_size;
         glm::ivec4 m_calculatedDims = {0, 0, 0, 0};
+
+        EventState m_eventState = EventState::None;
 
         friend class Renderer;
         friend class OpenGLRendererImpl;  // TODO new impls has to be added, bad design?

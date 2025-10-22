@@ -19,29 +19,33 @@ Renderer::Renderer(RendererType type, const glm::ivec2& viewportSize) {
 
 Renderer::~Renderer() {}
 
+void Renderer::registerCursorFunction(std::function<void(CursorType)> func) {
+    setCursorFunc = func;
+}
+
 void Renderer::mouseEvent(const MouseEvent& event) {
     m_root->mouseEvent(event);
 }
 
 void Renderer::update(float dt) {
-    if (m_dirty) {
+    if (s_dirty) {
         if (m_root) {
             glm::ivec2 viewportSize = m_impl->viewportSize();
             layoutElement(*m_root, {0, 0, viewportSize.x, viewportSize.y});
             render();
         }
-        m_dirty = false;
+        s_dirty = false;
     }
 }
 
 void Renderer::setRoot(std::shared_ptr<Panel> root) {
     m_root = root;
-    m_dirty = true;
+    s_dirty = true;
 }
 
 void Renderer::setViewportSize(const glm::ivec2& size) {
     m_impl->resize(size);
-    m_dirty = true;
+    s_dirty = true;
 }
 
 unsigned int Renderer::textureID() const {

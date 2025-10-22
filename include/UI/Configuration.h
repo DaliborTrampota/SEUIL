@@ -5,6 +5,12 @@
 
 namespace ui {
 
+    enum class CursorType {
+        Default,
+        Pointer,
+        Type,
+    };
+
     enum class AnchorPoint : uint8_t {
         None = 0,
         Top = 1,
@@ -103,7 +109,7 @@ namespace ui {
         ColorRGBA backgroundColor;
         unsigned int roundRadius;
         unsigned int borderThickness;
-        ColorRGB borderColor;
+        ColorRGB borderColor;  // Alpha is taken from bg color
         ColorRGB textColor;
         ColorRGB textHoverColor;
         ColorRGBA pressedColor;
