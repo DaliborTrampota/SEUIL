@@ -5,8 +5,6 @@
 #include "../Events.h"
 #include "UIElement.h"
 
-struct GLFWcursor;
-
 namespace ui {
     class Button : public UIElement {
       public:
@@ -36,9 +34,6 @@ namespace ui {
 
       protected:
         Style<Button> m_style;
-        std::shared_ptr<UIElement> m_parent = nullptr;
-
-        inline static GLFWcursor* s_pointerCursor = nullptr;
     };
 
 };  // namespace ui

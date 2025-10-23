@@ -39,7 +39,6 @@ namespace ui {
 
       protected:
         Style<Panel> m_style;
-        std::shared_ptr<Panel> m_parent = nullptr;
 
         std::vector<std::shared_ptr<UIElement>> m_children;
     };

@@ -83,41 +83,43 @@ Renderer::registerCursorFunction([](CursorType type) {
 #include <UI/elements/Panel.h>
 #include <UI/elements/Button.h>
 
+using namespace ui;
+
 // Create renderer with viewport size
-ui::Renderer renderer(ui::RendererType::OpenGL, {1920, 1080});
+Renderer renderer(RendererType::OpenGL, {1920, 1080});
 
 // Create root panel (full screen, relative sizing)
-auto root = std::make_shared<ui::Panel>(
-    ui::Pos<ui::Abs, ui::Abs>{0, 0},
-    ui::Size<ui::Rel, ui::Rel>{1.0f, 1.0f},
-    ui::Style<ui::Panel>{}
+auto root = std::make_shared<Panel>(
+    Pos<Abs, Abs>{0, 0},
+    Size<Rel, Rel>{1.0f, 1.0f},
+    Style<Panel>{}
 );
 
 // Create a centered child panel
-auto panel = std::make_shared<ui::Panel>(
-    ui::Pos<ui::Rel, ui::Rel>{0.5f, 0.5f},
-    ui::Size<ui::Abs, ui::Abs>{400, 300},
-    ui::Style<ui::Panel>{
+auto panel = std::make_shared<Panel>(
+    Pos<Rel, Rel>{0.5f, 0.5f},
+    Size<Abs, Abs>{400, 300},
+    Style<Panel>{
         .backgroundColor = {0.2f, 0.2f, 0.2f, 0.9f}
     },
-    ui::AnchorPoint::Mid  // Center anchor point
+    AnchorPoint::Mid  // Center anchor point
 );
 
 // Add button with event handler
-auto button = std::make_shared<ui::Button>(
-    ui::Pos<ui::Rel, ui::Rel>{0.5f, 0.8f},
-    ui::Size<ui::Abs, ui::Abs>{200, 50},
-    ui::Style<ui::Button>{
+auto button = std::make_shared<Button>(
+    Pos<Rel, Rel>{0.5f, 0.8f},
+    Size<Abs, Abs>{200, 50},
+    Style<Button>{
         .backgroundColor = {0.3f, 0.5f, 0.8f, 1.0f},
         .roundRadius = 5,
         .hoveredColor = {0.4f, 0.6f, 0.9f, 1.0f},
         .pressedColor = {0.2f, 0.4f, 0.7f, 1.0f}
     },
-    ui::AnchorPoint::Mid
+    AnchorPoint::Mid
 );
 
 // Connect button event
-button->pressedSignal.connect([](const ui::MouseEvent& e) {
+button->pressedSignal.connect([](const MouseEvent& e) {
     std::cout << "Button clicked!" << std::endl;
 });
 
@@ -131,8 +133,8 @@ renderer.update(deltaTime);
 
 // Handle mouse events:
 // You have to call mouseEvent on Renderer whenever mouse is moved or pressed
-ui::MouseEvent event{
-    .type = ui::MouseEvent::LMB,
+MouseEvent event{
+    .type = MouseEvent::LMB,
     .pos = {mouseX, mouseY}
 };
 renderer.mouseEvent(event);
@@ -146,14 +148,14 @@ SEUIL uses a flexible type-safe positioning system that allows mixing absolute (
 
 ```cpp
 // Position types
-ui::Pos<ui::Abs, ui::Abs>{100, 200}    // 100px from left, 200px from top
-ui::Pos<ui::Rel, ui::Rel>{0.5f, 0.5f}  // 50% from left, 50% from top
-ui::Pos<ui::Abs, ui::Rel>{100, 0.5f}   // 100px from left, 50% from top
+Pos<Abs, Abs>{100, 200}    // 100px from left, 200px from top
+Pos<Rel, Rel>{0.5f, 0.5f}  // 50% from left, 50% from top
+Pos<Abs, Rel>{100, 0.5f}   // 100px from left, 50% from top
 
 // Size types
-ui::Size<ui::Abs, ui::Abs>{400, 300}   // 400x300 pixels
-ui::Size<ui::Rel, ui::Rel>{0.8f, 0.6f} // 80% width, 60% height
-ui::Size<ui::Auto, ui::Auto>{}          // Auto-size (future feature)
+Size<Abs, Abs>{400, 300}   // 400x300 pixels
+Size<Rel, Rel>{0.8f, 0.6f} // 80% width, 60% height
+Size<Auto, Auto>{}          // Auto-size (future feature)
 ```
 
 ### Anchor Points
@@ -161,16 +163,16 @@ ui::Size<ui::Auto, ui::Auto>{}          // Auto-size (future feature)
 Anchor points determine how elements are aligned relative to their position:
 
 ```cpp
-ui::AnchorPoint::None         // Top-left corner (default)
-ui::AnchorPoint::Mid          // Center
-ui::AnchorPoint::Top          // Top center
-ui::AnchorPoint::Bottom       // Bottom center
-ui::AnchorPoint::Left         // Middle left
-ui::AnchorPoint::Right        // Middle right
-ui::AnchorPoint::TopLeft      // Top-left corner
-ui::AnchorPoint::TopRight     // Top-right corner
-ui::AnchorPoint::BottomLeft   // Bottom-left corner
-ui::AnchorPoint::BottomRight  // Bottom-right corner
+AnchorPoint::None         // Top-left corner (default)
+AnchorPoint::Mid          // Center
+AnchorPoint::Top          // Top center
+AnchorPoint::Bottom       // Bottom center
+AnchorPoint::Left         // Middle left
+AnchorPoint::Right        // Middle right
+AnchorPoint::TopLeft      // Top-left corner
+AnchorPoint::TopRight     // Top-right corner
+AnchorPoint::BottomLeft   // Bottom-left corner
+AnchorPoint::BottomRight  // Bottom-right corner
 ```
 
 ### Event System
@@ -179,16 +181,16 @@ SEUIL uses a signal-slot pattern for event handling:
 
 ```cpp
 // Available signals
-element->hoverSignal.connect([](const ui::MouseEvent& e) { /* ... */ });
-button->pressedSignal.connect([](const ui::ButtonEvent& e) { /* ... */ });
+element->hoverSignal.connect([](const MouseEvent& e) { /* ... */ });
+button->pressedSignal.connect([](const ButtonEvent& e) { /* ... */ });
 
 // Mouse event types
-ui::MouseEvent::Move       // Mouse movement
-ui::MouseEvent::LMB        // Left mouse button
-ui::MouseEvent::RMB        // Right mouse button
-ui::MouseEvent::MMB        // Middle mouse button
-ui::MouseEvent::WheelUp    // Scroll up
-ui::MouseEvent::WheelDown  // Scroll down
+MouseEvent::Move       // Mouse movement
+MouseEvent::LMB        // Left mouse button
+MouseEvent::RMB        // Right mouse button
+MouseEvent::MMB        // Middle mouse button
+MouseEvent::WheelUp    // Scroll up
+MouseEvent::WheelDown  // Scroll down
 ```
 
 ## UI Elements
@@ -198,7 +200,7 @@ ui::MouseEvent::WheelDown  // Scroll down
 Container element that can hold child elements:
 
 ```cpp
-ui::Style<ui::Panel> style{
+Style<Panel> style{
     .backgroundColor = {r, g, b, a},  // RGBA color
     .roundRadius = 10,                 // Corner radius in pixels
     .borderThickness = 2,              // Border thickness in pixels
@@ -211,14 +213,14 @@ ui::Style<ui::Panel> style{
 Displays textures:
 
 ```cpp
-ui::Style<ui::Image> style{
+Style<Image> style{
     .roundRadius = 5,      // Corner radius
     .opacity = 1.0f,       // 0.0 to 1.0
     .pixelated = false     // Use nearest-neighbor filtering
 };
 
-// Load image
-unsigned int imageId = ui::Renderer::imageDataMgr.loadImage("path/to/image.png");
+// Load image (to be revisited)
+unsigned int imageId = Renderer::imageDataMgr.loadImage("path/to/image.png");
 image->setImageId(imageId);
 ```
 
@@ -227,7 +229,7 @@ image->setImageId(imageId);
 Interactive button element:
 
 ```cpp
-ui::Style<ui::Button> style{
+Style<Button> style{
     .backgroundColor = {0.3f, 0.5f, 0.8f, 1.0f},
     .roundRadius = 5,
     .borderThickness = 1,
@@ -238,7 +240,7 @@ ui::Style<ui::Button> style{
     .hoveredColor = {0.4f, 0.6f, 0.9f, 1.0f}
 };
 
-button->pressedSignal.connect([](const ui::MouseEvent& e) {
+button->pressedSignal.connect([](const MouseEvent& e) {
     // Handle button press
 });
 ```

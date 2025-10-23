@@ -106,13 +106,19 @@ namespace ui {
 
     template <>
     struct Style<Button> {
-        ColorRGBA backgroundColor;
+        struct State {
+            ColorRGBA background;
+            // Alpha is taken from bg color
+            ColorRGB text;
+            ColorRGB border;
+        };
+
+        State normal;
+        State hovered;
+        State pressed;
+
         unsigned int roundRadius;
         unsigned int borderThickness;
-        ColorRGB borderColor;  // Alpha is taken from bg color
-        ColorRGB textColor;
-        ColorRGB textHoverColor;
-        ColorRGBA pressedColor;
-        ColorRGBA hoveredColor;
+    };
     };
 }  // namespace ui

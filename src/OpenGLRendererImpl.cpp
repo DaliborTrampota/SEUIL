@@ -264,24 +264,27 @@ void OpenGLRendererImpl::renderImage(
 
 void OpenGLRendererImpl::renderButton(const Button& button) {
     const auto& style = button.style_c();
+    EventState state = button.state();
 
     detail::Quad quad = makeQuad(button.m_calculatedDims);
 
-    unsigned int colorIndex = findOrStoreColor(style.backgroundColor);
-    unsigned int hoverIndex = findOrStoreColor(style.hoveredColor);
-    unsigned int pressedIndex = findOrStoreColor(style.pressedColor);
-    // unsigned int textIndex = findOrStoreColor(style.textColor);
-    // unsigned int textHoverIndex = findOrStoreColor(style.textHoverColor);
+    Style<Button>::State stateStyle = state == EventState::Hovered   ? style.hovered
+                                      : state == EventState::Pressed ? style.pressed
+                                                                     : style.normal;
 
-    unsigned int borderColorIndex = findOrStoreColor({style.borderColor, 1.f});
+    unsigned int bgColorIndex = findOrStoreColor(stateStyle.background);
+    unsigned int textColorIndex = findOrStoreColor({stateStyle.text, 1.f});
+    unsigned int borderColorIndex = findOrStoreColor({stateStyle.border, 1.f});
 
     for (auto& vert : quad.vertices) {
         vert.borderData = {style.roundRadius, style.borderThickness, borderColorIndex};
         vert.type = detail::QuadType::Button;
         vert.data = button.isHovered() ? 1 : button.isPressed() ? 2 : 0;
-        vert.colorIndex = colorIndex;
+        vert.colorIndex = bgColorIndex;
     }
     m_vertices.insert(m_vertices.end(), std::begin(quad.vertices), std::end(quad.vertices));
+
+    //render label
 }
 
 

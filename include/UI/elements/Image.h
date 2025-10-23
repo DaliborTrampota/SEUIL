@@ -53,7 +53,6 @@ namespace ui {
 
       protected:
         Style<Image> m_style;
-        std::shared_ptr<Panel> m_parent = nullptr;
 
         const ImageData* m_textureData = nullptr;
         size_t m_index = std::numeric_limits<size_t>::max();

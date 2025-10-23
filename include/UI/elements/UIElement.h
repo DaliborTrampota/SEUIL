@@ -4,8 +4,9 @@
 #include <variant>
 
 #include "../Configuration.h"
-#include "../Signal.h"
 #include "../Events.h"
+#include "../Signal.h"
+
 
 namespace ui {
     class Renderer;
@@ -35,7 +36,7 @@ namespace ui {
         /// @brief Checks if the panel contains a point, eg. mouse position.
         /// @param point The point to check.
         /// @return True if the panel contains the point, false otherwise.
-        bool contains(const glm::vec2& point) const;
+        virtual bool contains(const glm::vec2& point) const;
 
         EventState state() const { return m_eventState; };
 
@@ -48,6 +49,7 @@ namespace ui {
         Positions m_position;
         Sizes m_size;
         glm::ivec4 m_calculatedDims = {0, 0, 0, 0};
+        std::shared_ptr<Panel> m_parent = nullptr;
 
         EventState m_eventState = EventState::None;
 
