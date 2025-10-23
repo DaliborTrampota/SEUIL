@@ -14,7 +14,7 @@
 
 ## Dependencies
 
-- FreeType (for text rendering)
+- FreeType for text
 - stb_image.h
 
 ## Requirements
@@ -279,9 +279,8 @@ cmake --build .
 - [ ] Additional UI elements (Checkbox, Slider, TextField)
 - [ ] Layout containers (HBox, VBox, Grid)
 - [ ] Animation system
-- [ ] Theming support
-- [ ] Vulkan backend
-- [ ] Multi-monitor DPI awareness
+- [ ] Theming support?
+- [ ] Vulkan backend?
 
 ## Contributing
 
@@ -292,7 +291,3 @@ Contributions are welcome! Feel free to submit issues and pull requests.
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 
 Copyright 2025 SEUIL Contributors
-
----
-
-**Made for creating beautiful user interfaces**
