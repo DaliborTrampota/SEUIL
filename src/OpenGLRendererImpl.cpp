@@ -173,6 +173,7 @@ void OpenGLRendererImpl::render() {
         m_textAttributes.bind();
         m_textMaterial.setInt("uMSDF", 0);
         m_textMaterial.setFloat("pxRange", FontAtlas::PIXEL_RANGE);
+        m_textTexture.bind();
         glDrawArrays(GL_TRIANGLES, 0, m_textAttributes.length());
     }
 
