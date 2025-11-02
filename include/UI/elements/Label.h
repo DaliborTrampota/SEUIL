@@ -38,10 +38,11 @@ namespace ui {
         void mouseEvent(const MouseEvent& event) override {};
         void visit(Renderer& renderer) override;
 
+        /// @brief Checks if the text glyphs are generated and cached
         bool cached() const { return !m_dirty && !m_textCache.empty(); }
 
       protected:
-        friend class OpenGLRendererImpl;
+        friend class OpenGLRendererImpl;  //TODO get rid?
         bool m_dirty = true;
         std::string m_text;
         Style<Label> m_style;

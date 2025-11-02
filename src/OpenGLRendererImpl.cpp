@@ -19,6 +19,31 @@
 
 using namespace ui;
 
+namespace {
+    void adjustAlignment(AnchorPoint alignment, const glm::vec4& posSize, glm::vec2& vertPos) {
+        bool top = static_cast<uint8_t>(alignment & AnchorPoint::Top);
+        bool bottom = static_cast<uint8_t>(alignment & AnchorPoint::Bottom);
+        bool left = static_cast<uint8_t>(alignment & AnchorPoint::Left);
+        bool right = static_cast<uint8_t>(alignment & AnchorPoint::Right);
+        // no need to check for mid, because it will be handled by the x and y checks
+
+        bool x = left || right;
+        bool y = top || bottom;
+
+        if (!x)
+            vertPos.x -= posSize.z / 2;
+
+        if (!y)
+            vertPos.y += posSize.w / 2;
+
+        if (top)
+            vertPos.y += posSize.w;
+
+        if (right)
+            vertPos.x -= posSize.z;
+    }
+}  // namespace
+
 
 unsigned int OpenGLRendererImpl::findOrStoreColor(const glm::vec4& color) {
     const std::vector<glm::vec4>& data = m_shaderColors.data();
@@ -310,6 +335,9 @@ void OpenGLRendererImpl::renderLabel(const Label& label) {
     std::vector<detail::UITextVertex> vertices;
     vertices.reserve(label.m_textCache.size() * 6);
 
+
+    float maxHeight = 0.f;
+
     for (const auto& glyph : label.m_textCache) {
         if (glyph->isWhitespace()) {
             advance += glyph->getAdvance() * scale;
@@ -324,6 +352,8 @@ void OpenGLRendererImpl::renderLabel(const Label& label) {
             (r - l) * scale,
             (t - b) * scale
         };
+
+        maxHeight = std::max(maxHeight, posSize.w);
 
         posSize += labelPos;
         posSize.x += advance;
@@ -348,10 +378,12 @@ void OpenGLRendererImpl::renderLabel(const Label& label) {
     }
 
     const_cast<Label&>(label).m_calculatedDims.z = advance;
-    //label.m_calculatedDims.w =
+    const_cast<Label&>(label).m_calculatedDims.w = maxHeight;
 
-    for (auto& vert : vertices)
+    for (auto& vert : vertices) {
+        adjustAlignment(alignment, label.m_calculatedDims, vert.pos);
         m_textAttributes.move(std::move(vert));
+    }
 }
 
 void OpenGLRendererImpl::loadImage(Image& image) {

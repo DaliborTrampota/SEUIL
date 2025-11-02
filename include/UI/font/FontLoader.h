@@ -24,27 +24,38 @@ namespace ui {
         FontLoader(const FontLoader& other) = delete;
         FontLoader& operator=(const FontLoader& other) = delete;
 
-        FontLoader(FontLoader&& other) noexcept = default;
-        FontLoader& operator=(FontLoader&& other) noexcept = default;
+        FontLoader(FontLoader&& other) noexcept;
+        FontLoader& operator=(FontLoader&& other) noexcept;
 
+        static constexpr double MAX_CORNER_ANGLE = 3.0;
+        static constexpr double MINIMUM_SCALE = 24.0;
+        static constexpr double PIXEL_RANGE = 2.0;
+        static constexpr double MITER_LIMIT = 1.0;
+
+        /// @brief Load a font from a file
         void loadFont(const std::string& fontPath);
 
-        /// @brief Generate glyph geometries for the given text
+        /// @brief Generate glyph geometries for the given text with loaded font
         /// @returns Preprocessed glyphs vector for each character in the string in order
         std::vector<const msdf_atlas::GlyphGeometry*> generateText(
             const std::string& text, unsigned pxSize, int& startIndex, int& count
         );
 
+        /// @brief Unload and destroy the loaded font
         void unloadFont();
 
-        FontAtlas packToAtlas(bool dynamic = false);
+        /// @brief Pack glyphs into an texture atlas
+        /// @param dynamic If true, the atlas will be dynamic, meaning more characters can be added to it over time and will be resized as needed
+        /// @returns FontAtlas object containing the packed glyphs and pixel data
+        FontAtlas packToAtlas(bool dynamic = true);
 
+        /// @returns Reference to the vector of glyph geometries
         std::vector<msdf_atlas::GlyphGeometry>& glyphs() { return m_glyphs; }
 
-        /// @returns Returns pointer to the first new glyph
-        //msdf_atlas::GlyphGeometry* glyphs() const { return m_glyphs.data();}
-
-        /// Get font metrics for a specific font size (returns null if not loaded for that size)
+        /// @brief Get font metrics for a specific font size (returns null if not loaded for that size)
+        /// @param fontName Name of the font
+        /// @param pxSize Font size in pixels
+        /// @returns Pointer to the font geometry
         const msdf_atlas::FontGeometry* getFontGeometry(
             const std::string& fontName, unsigned pxSize
         ) const;
