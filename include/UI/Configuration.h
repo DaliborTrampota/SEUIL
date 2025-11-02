@@ -2,6 +2,7 @@
 
 #include <concepts>
 #include <glm/glm.hpp>
+#include <string>
 
 namespace ui {
 
@@ -85,6 +86,7 @@ namespace ui {
     class Panel;
     class Image;
     class Button;
+    class Label;
 
     using ColorRGBA = glm::vec4;
     using ColorRGB = glm::vec3;
@@ -120,5 +122,11 @@ namespace ui {
         unsigned int roundRadius;
         unsigned int borderThickness;
     };
+
+    template <>
+    struct Style<Label> {
+        ColorRGBA color = {1.f, 1.f, 1.f, 1.f};
+        std::string font = "resources/fonts/ARIAL.TTF";
+        uint8_t fontSize = 16;
     };
 }  // namespace ui

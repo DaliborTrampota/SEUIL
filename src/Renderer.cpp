@@ -2,6 +2,8 @@
 
 #include <UI/Events.h>
 #include <UI/elements/Panel.h>
+#include <UI/elements/Label.h>
+
 #include "../src/OpenGLRendererImpl.h"
 
 
@@ -66,6 +68,10 @@ void Renderer::layoutElement(UIElement& element, const glm::ivec4& parentDims) {
             m_impl->loadImage(*image);
         }
     }
+    if (auto* label = dynamic_cast<Label*>(&element)) {
+        if (!label->cached())
+            m_impl->loadText(*label);
+    }
 }
 
 void Renderer::render() {
@@ -89,4 +95,8 @@ void Renderer::renderImage(Image& image) {
 
 void Renderer::renderButton(Button& button) {
     m_impl->renderButton(button);
+}
+
+void Renderer::renderLabel(Label& label) {
+    m_impl->renderLabel(label);
 }

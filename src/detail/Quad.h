@@ -5,19 +5,8 @@
 
 #include <glad/glad.h>
 
-namespace {
-    struct Attr {
-        enum Type {
-            Float,
-            Int,
-            UInt,
-        };
-        int loc;
-        int size;
-        Type type;
-        int offset;
-    };
-}  // namespace
+#include <LWGL/buffer/VertexLayout.h>
+
 
 namespace ui::detail {
 
@@ -25,7 +14,9 @@ namespace ui::detail {
         Panel = 0,
         Image = 1,
         Button = 2,
+        Label = 3,
     };
+
 
     struct UIVertex {
         glm::vec2 pos;
@@ -34,47 +25,45 @@ namespace ui::detail {
         QuadType type;
         glm::uvec3 borderData;
         unsigned int data = 0;
+
+        static constexpr gl::VertexLayout layout() {
+            return {
+                sizeof(UIVertex),
+                {
+                    {0, gl::VertexAttribute::Float, 2, offsetof(UIVertex, pos)},
+                    {1, gl::VertexAttribute::Float, 2, offsetof(UIVertex, uv)},
+                    {2, gl::VertexAttribute::UInt, 1, offsetof(UIVertex, colorIndex)},
+                    {3, gl::VertexAttribute::UInt, 1, offsetof(UIVertex, type)},
+                    {4, gl::VertexAttribute::UInt, 3, offsetof(UIVertex, borderData)},
+                    {5, gl::VertexAttribute::UInt, 1, offsetof(UIVertex, data)},
+                },
+            };
+        }
+    };
+
+    struct UITextVertex {
+        glm::vec2 pos;
+        glm::vec2 uv;
+        unsigned int colorIndex;
+        static constexpr gl::VertexLayout layout() {
+            return {
+                sizeof(UITextVertex),
+                {
+                    {0, gl::VertexAttribute::Float, 2, offsetof(UITextVertex, pos)},
+                    {1, gl::VertexAttribute::Float, 2, offsetof(UITextVertex, uv)},
+                    {2, gl::VertexAttribute::UInt, 1, offsetof(UITextVertex, colorIndex)},
+                },
+            };
+        }
     };
 
     struct Quad {
         UIVertex vertices[6];
         QuadType type;
+    };
 
-        static constexpr Attr layout[] = {
-            {0, 2, Attr::Type::Float, 0},
-            {1, 2, Attr::Type::Float, offsetof(UIVertex, uv)},
-            {2, 1, Attr::Type::UInt, offsetof(UIVertex, colorIndex)},
-            {3, 1, Attr::Type::UInt, offsetof(UIVertex, type)},
-            {4, 3, Attr::Type::UInt, offsetof(UIVertex, borderData)},
-            {5, 1, Attr::Type::UInt, offsetof(UIVertex, data)},
-        };
-
-        static void attributes() {
-            int stride = sizeof(detail::UIVertex);
-
-
-            for (const auto& attr : layout) {
-                if (attr.type == Attr::Type::Float) {
-                    glVertexAttribPointer(
-                        attr.loc,
-                        attr.size,
-                        GL_FLOAT,
-                        GL_FALSE,
-                        stride,
-                        (void*)(uintptr_t(attr.offset))
-                    );
-                } else {
-                    glVertexAttribIPointer(
-                        attr.loc,
-                        attr.size,
-                        attr.type == Attr::Type::Int ? GL_INT : GL_UNSIGNED_INT,
-                        stride,
-                        (void*)(uintptr_t(attr.offset))
-                    );
-                }
-                glEnableVertexAttribArray(attr.loc);
-            }
-        }
+    struct TextQuad {
+        UITextVertex vertices[6];
     };
 
 }  // namespace ui::detail

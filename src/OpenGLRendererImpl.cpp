@@ -1,14 +1,21 @@
-#include "../src/OpenGLRendererImpl.h"
+#include "OpenGLRendererImpl.h"
 
 #include <glad/glad.h>
 
 #include <UI/elements/Button.h>
 #include <UI/elements/Image.h>
+#include <UI/elements/Label.h>
 #include <UI/elements/Panel.h>
 
+#include "detail/Quad.h"
+#include "detail/Shader.h"
 
-#include "../src/detail/Quad.h"
-#include "../src/detail/Shader.h"
+#include <UI/font/FontLoader.h>
+
+#include <LWGL/render/Shader.h>
+#include <LWGL/texture/Texture2D.h>
+
+#include <utility>  // for std::swap
 
 using namespace ui;
 
@@ -24,8 +31,15 @@ unsigned int OpenGLRendererImpl::findOrStoreColor(const glm::vec4& color) {
 }
 
 OpenGLRendererImpl::OpenGLRendererImpl(unsigned int fboID, const glm::ivec2& viewportSize)
-    : m_fboID(fboID),
-      m_shaderColors(1) {
+    : m_material("resources/shaders/SEUIL.vert", "resources/shaders/SEUIL.frag", "SEUIL"),
+      m_textMaterial(
+          "resources/shaders/SEUIL_TEXT.vert", "resources/shaders/SEUIL_TEXT.frag", "SEUIL_TEXT"
+      ),
+      m_attributes(GL_DYNAMIC_DRAW),
+      m_textAttributes(GL_DYNAMIC_DRAW),
+      m_fboID(fboID),
+      m_shaderColors(1),
+      m_fontAtlas(FontAtlas::createDynamic()) {
     m_viewportSize = viewportSize;
 
     // Check for ARB_bindless_texture support
@@ -36,16 +50,23 @@ OpenGLRendererImpl::OpenGLRendererImpl(unsigned int fboID, const glm::ivec2& vie
     }
 
     setupFBO();
-    setupShaders();
-    setupBuffer();
+    m_material.use();
+    m_material.setVec2("uScreenSize", (glm::vec2)viewportSize);
+    m_textMaterial.use();
+    m_textMaterial.setVec2("uScreenSize", (glm::vec2)viewportSize);
+    m_textMaterial.setInt("uMSDF", 0);
+    m_textMaterial.setFloat("pxRange", FontAtlas::PIXEL_RANGE);
+
+    m_attributes.create();
+    m_textAttributes.create();
+    m_shaderColors.create({});
+
+    m_textTexture.create(gl::Settings());  // linear interpolation
 }
 
 OpenGLRendererImpl::~OpenGLRendererImpl() {
     if (m_fboTextureID) {
         glDeleteTextures(1, &m_fboTextureID);
-    }
-    if (m_programID) {
-        glDeleteProgram(m_programID);
     }
 }
 
@@ -53,13 +74,10 @@ void OpenGLRendererImpl::resize(const glm::ivec2& newSize) {
     m_viewportSize = newSize;
     setupFBO();
 
-    glUseProgram(m_programID);
-    glUniform2f(
-        glGetUniformLocation(m_programID, "uScreenSize"),
-        (float)m_viewportSize.x,
-        (float)m_viewportSize.y
-    );
-    glUseProgram(0);
+    m_material.use();
+    m_material.setVec2("uScreenSize", (glm::vec2)m_viewportSize);
+    m_textMaterial.use();
+    m_textMaterial.setVec2("uScreenSize", (glm::vec2)m_viewportSize);
 }
 
 void OpenGLRendererImpl::setupFBO() {
@@ -111,46 +129,6 @@ void OpenGLRendererImpl::setupFBO() {
     //glBindRenderbuffer(GL_RENDERBUFFER, 0);
 }
 
-void OpenGLRendererImpl::setupShaders() {
-    detail::Shader vertexShader("resources/shaders/SEUIL.vert", GL_VERTEX_SHADER);
-    detail::Shader fragmentShader("resources/shaders/SEUIL.frag", GL_FRAGMENT_SHADER);
-
-    m_programID = glCreateProgram();
-    glAttachShader(m_programID, vertexShader.ID);
-    glAttachShader(m_programID, fragmentShader.ID);
-    glLinkProgram(m_programID);
-
-    int success;
-    char infoLog[512];
-    glGetProgramiv(m_programID, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(m_programID, 512, NULL, infoLog);
-        printf("ERROR::SHADER::PROGRAM\n%s", infoLog);
-    }
-
-    glUseProgram(m_programID);
-    glUniform2f(
-        glGetUniformLocation(m_programID, "uScreenSize"), m_viewportSize.x, m_viewportSize.y
-    );
-    glUseProgram(0);
-}
-
-void OpenGLRendererImpl::setupBuffer() {
-    glGenVertexArrays(1, &m_vaoID);
-    glBindVertexArray(m_vaoID);
-
-    glGenBuffers(1, &m_vboID);
-    glBindBuffer(GL_ARRAY_BUFFER, m_vboID);
-
-    detail::Quad::attributes();
-
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    m_shaderColors.create({});
-}
-
-
 void OpenGLRendererImpl::beforeRender() {
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboID);
     glDisable(GL_DEPTH_TEST);
@@ -162,24 +140,14 @@ void OpenGLRendererImpl::beforeRender() {
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);  // Clear to fully transparent
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glUseProgram(m_programID);
-
-    glBindVertexArray(m_vaoID);
-    glBindBuffer(GL_ARRAY_BUFFER, m_vboID);
-    glBufferData(
-        GL_ARRAY_BUFFER,
-        m_vertices.size() * sizeof(detail::UIVertex),
-        m_vertices.data(),
-        GL_DYNAMIC_DRAW
-    );
-
     m_bindlessTextures.use();
     m_bindlessTextures.update();
     m_shaderColors.bind();
 }
 
 void OpenGLRendererImpl::afterRender() {
-    m_vertices.clear();
+    m_attributes.clear();
+    m_textAttributes.clear();
     m_bindlessTextures.unload();  // Unload because we dont render UI every frame
     m_shaderColors.unbind();
 
@@ -194,23 +162,28 @@ void OpenGLRendererImpl::afterRender() {
 void OpenGLRendererImpl::render() {
     beforeRender();
 
-    if (m_vertices.size() > 0) {
-        glDrawArrays(GL_TRIANGLES, 0, m_vertices.size());
+    if (m_attributes.length() > 0) {
+        m_material.use();
+        m_attributes.bind();
+        glDrawArrays(GL_TRIANGLES, 0, m_attributes.length());
+    }
 
-        GLenum err = glGetError();
-        if (err != GL_NO_ERROR) {
-            printf("GL Error after draw: 0x%x\n", err);
-        }
+    if (m_textAttributes.length() > 0) {
+        m_textMaterial.use();
+        m_textAttributes.bind();
+        m_textMaterial.setInt("uMSDF", 0);
+        m_textMaterial.setFloat("pxRange", FontAtlas::PIXEL_RANGE);
+        glDrawArrays(GL_TRIANGLES, 0, m_textAttributes.length());
     }
 
     afterRender();
 }
 
 detail::Quad OpenGLRendererImpl::makeQuad(const glm::ivec4& posSize) const {
-    glm::vec2 BL = {posSize.x, posSize.y + posSize.w};
-    glm::vec2 BR = {posSize.x + posSize.z, posSize.y + posSize.w};
     glm::vec2 TL = {posSize.x, posSize.y};
     glm::vec2 TR = {posSize.x + posSize.z, posSize.y};
+    glm::vec2 BL = {posSize.x, posSize.y + posSize.w};
+    glm::vec2 BR = {posSize.x + posSize.z, posSize.y + posSize.w};
 
     detail::Quad quad;
     quad.vertices[0] = {BR, glm::vec2(1.0f, 0.0f)};
@@ -220,6 +193,29 @@ detail::Quad OpenGLRendererImpl::makeQuad(const glm::ivec4& posSize) const {
     quad.vertices[4] = {BR, glm::vec2(1.0f, 0.0f)};
     quad.vertices[5] = {TR, glm::vec2(1.0f, 1.0f)};
 
+    return quad;
+}
+
+detail::TextQuad OpenGLRendererImpl::makeTextQuad(
+    const glm::ivec4& posSize, const glm::vec4& uv
+) const {
+    glm::vec2 TL = {posSize.x, posSize.y};
+    glm::vec2 TR = {posSize.x + posSize.z, posSize.y};
+    glm::vec2 BL = {posSize.x, posSize.y + posSize.w};
+    glm::vec2 BR = {posSize.x + posSize.z, posSize.y + posSize.w};
+
+    glm::vec2 uvTL = {uv.x, uv.y};
+    glm::vec2 uvTR = {uv.z, uv.y};
+    glm::vec2 uvBL = {uv.x, uv.w};
+    glm::vec2 uvBR = {uv.z, uv.w};
+
+    detail::TextQuad quad;
+    quad.vertices[0] = {BR, uvBR};
+    quad.vertices[1] = {TL, uvTL};
+    quad.vertices[2] = {BL, uvBL};
+    quad.vertices[3] = {TL, uvTL};
+    quad.vertices[4] = {BR, uvBR};
+    quad.vertices[5] = {TR, uvTR};
     return quad;
 }
 
@@ -238,8 +234,8 @@ void OpenGLRendererImpl::renderPanel(const Panel& panel) {
         vert.colorIndex = colorIndex;
         vert.type = detail::QuadType::Panel;
         vert.borderData = {style.roundRadius, style.borderThickness, borderColorIndex};
+        m_attributes.move(std::move(vert));
     }
-    m_vertices.insert(m_vertices.end(), std::begin(quad.vertices), std::end(quad.vertices));
 }
 
 void OpenGLRendererImpl::renderImage(
@@ -258,8 +254,8 @@ void OpenGLRendererImpl::renderImage(
         vert.type = detail::QuadType::Image;
         vert.data = idx;
         vert.colorIndex = style.opacity;
+        m_attributes.move(std::move(vert));
     }
-    m_vertices.insert(m_vertices.end(), std::begin(quad.vertices), std::end(quad.vertices));
 }
 
 void OpenGLRendererImpl::renderButton(const Button& button) {
@@ -281,12 +277,81 @@ void OpenGLRendererImpl::renderButton(const Button& button) {
         vert.type = detail::QuadType::Button;
         vert.data = button.isHovered() ? 1 : button.isPressed() ? 2 : 0;
         vert.colorIndex = bgColorIndex;
+        m_attributes.move(std::move(vert));
     }
-    m_vertices.insert(m_vertices.end(), std::begin(quad.vertices), std::end(quad.vertices));
-
     //render label
 }
 
+void OpenGLRendererImpl::renderLabel(const Label& label) {
+    const auto& style = label.style_c();
+    if (style.color.a == 0.f)
+        return;
+
+    const AnchorPoint& alignment = label.alignment();
+
+    // Get font metrics to calculate scale
+    const msdf_atlas::FontGeometry* fontGeometry =
+        m_fontLoader.getFontGeometry(style.font, style.fontSize);
+    if (!fontGeometry) {
+        throw std::runtime_error("Failed to get font geometry");
+    }
+
+    const msdfgen::FontMetrics& metrics = fontGeometry->getMetrics();
+    double scale = style.fontSize / metrics.emSize;
+    const unsigned char* data = m_fontAtlas.data();
+
+    unsigned int colorIndex = findOrStoreColor(style.color);
+    glm::vec4 labelPos = label.m_calculatedDims;
+
+    float advance = 0.f;
+    glm::vec2 atlasSize{m_fontAtlas.width(), m_fontAtlas.height()};
+
+    std::vector<detail::UITextVertex> vertices;
+    vertices.reserve(label.m_textCache.size() * 6);
+
+    for (const auto& glyph : label.m_textCache) {
+        if (glyph->isWhitespace()) {
+            advance += glyph->getAdvance() * scale;
+            continue;
+        }
+        double l, b, r, t;
+        glyph->getQuadPlaneBounds(l, b, r, t);
+
+        glm::vec4 posSize = {
+            l * scale,
+            -t * scale,  // invert Y: use -t for top
+            (r - l) * scale,
+            (t - b) * scale
+        };
+
+        posSize += labelPos;
+        posSize.x += advance;
+
+        advance += glyph->getAdvance() * scale;
+
+        glm::dvec4 uv;
+        glyph->getQuadAtlasBounds(uv.x, uv.y, uv.z, uv.w);
+
+        uv.x /= atlasSize.x;
+        uv.y /= atlasSize.y;
+        uv.z /= atlasSize.x;
+        uv.w /= atlasSize.y;
+
+        std::swap(uv.y, uv.w);  // Flip UV vertically (swap top and bottom)
+
+        detail::TextQuad quad = makeTextQuad(posSize, uv);
+        for (auto& vert : quad.vertices) {
+            vert.colorIndex = colorIndex;
+            vertices.emplace_back(std::move(vert));
+        }
+    }
+
+    const_cast<Label&>(label).m_calculatedDims.z = advance;
+    //label.m_calculatedDims.w =
+
+    for (auto& vert : vertices)
+        m_textAttributes.move(std::move(vert));
+}
 
 void OpenGLRendererImpl::loadImage(Image& image) {
     const ImageData* textureData = image.textureData();
@@ -308,4 +373,31 @@ void OpenGLRendererImpl::loadImage(Image& image) {
     );
 
     image.index(idx);
+}
+
+void OpenGLRendererImpl::loadText(Label& label) {
+    const auto& style = label.style_c();
+
+    int startIndex, count;
+    m_fontLoader.loadFont(style.font);
+    std::vector<const msdf_atlas::GlyphGeometry*> glyphs =
+        m_fontLoader.generateText(label.text(), style.fontSize, startIndex, count);
+
+
+    m_fontAtlas.addGlyphs(m_fontLoader.glyphs().data() + startIndex, count);
+    //m_fontAtlas = m_fontLoader.packToAtlas(); // Switch to static atlas
+
+    const unsigned char* data = m_fontAtlas.data();
+
+    m_textTexture.bind();
+    m_textTexture.loadRaw(
+        m_fontAtlas.width(),
+        m_fontAtlas.height(),
+        3,
+        gl::ImageFormat::RGB,
+        const_cast<unsigned char*>(data)
+    );
+
+    label.m_textCache = glyphs;
+    label.m_dirty = false;
 }

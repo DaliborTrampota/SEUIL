@@ -30,7 +30,7 @@ glm::ivec4 UIElement::calculateSizeAndPosition(const glm::ivec4& parentPosSize) 
                 m_calculatedDims.z = parentPosSize.z * size.x;
                 m_calculatedDims.w = parentPosSize.w * size.y;
             } else if constexpr (std::is_same_v<T, Size<Auto, Auto>>) {
-                assert(false && "Auto size is not supported");
+                //assert(false && "Auto size is not supported");
             }
         },
         m_size

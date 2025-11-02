@@ -1,0 +1,57 @@
+#pragma once
+
+#include <variant>
+#include <vector>
+
+
+#include <msdf-atlas-gen/msdf-atlas-gen.h>
+#include "../src/font/ThreadPoolAtlasGenerator.h"
+
+
+namespace ui {
+
+    //template <typename PixelT = byte, int N_CHANNEL = 3>
+    class FontAtlas {
+      public:
+        FontAtlas(const FontAtlas&) = delete;
+        FontAtlas& operator=(const FontAtlas&) = delete;
+        FontAtlas(FontAtlas&&) = default;
+        FontAtlas& operator=(FontAtlas&&) = default;
+
+        static constexpr double MAX_CORNER_ANGLE = 3.0;
+        static constexpr double MINIMUM_SCALE = 24.0;
+        static constexpr double PIXEL_RANGE = 2.0;
+        static constexpr double MITER_LIMIT = 1.0;
+
+        using StorageR = msdfgen::BitmapConstRef<msdf_atlas::byte, 3>;
+        using StorageW = msdf_atlas::BitmapAtlasStorage<msdf_atlas::byte, 3>;
+        using AtlasGenerator =
+            msdf_atlas::ImmediateAtlasGenerator<float, 3, msdf_atlas::msdfGenerator, StorageW>;
+        using DynAtlasGenerator = msdf_atlas::DynamicAtlas<AtlasGenerator>;
+
+        /// @note Glyphs must have edge coloring and wrap box already applied
+        static FontAtlas createStatic(
+            int w, int h, const std::vector<msdf_atlas::GlyphGeometry>& glyphs
+        );
+
+        static FontAtlas createDynamic();
+
+        /// @brief Add preprocessed glyphs to a dynamic atlas
+        /// @note Glyphs must have edge coloring and wrap box already applied
+        /// @note Throws if called on a static atlas
+        void addGlyphs(msdf_atlas::GlyphGeometry* glyphs, int count);
+
+        const unsigned char* data() const { return m_bitmap.pixels; }
+        int width() const { return m_width; }
+        int height() const { return m_height; }
+
+      private:
+        FontAtlas(AtlasGenerator gen);
+        FontAtlas(DynAtlasGenerator gen);
+
+        int m_width = -1;
+        int m_height = -1;
+        StorageR m_bitmap;
+        std::variant<AtlasGenerator, DynAtlasGenerator> m_generator;
+    };
+}  // namespace ui

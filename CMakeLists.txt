@@ -1,7 +1,7 @@
 ############################
 # Simple Enough UI Library #
 ############################
-file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS src/*.cpp src/*.h)
+file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS src/*.cpp src/*.h src/*.hpp)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src" PREFIX "Source Files" FILES ${SRC_FILES})
 file(GLOB_RECURSE INC_FILES CONFIGURE_DEPENDS include/UI/*.h)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/include/UI" PREFIX "Include" FILES ${INC_FILES})
@@ -11,10 +11,13 @@ target_sources(seuil PUBLIC ${INC_FILES})
 
 add_subdirectory(dependencies)
 
-target_link_libraries(seuil PRIVATE freetype)
+# target_link_libraries(seuil PRIVATE freetype)
+target_link_libraries(seuil PUBLIC msdf-atlas-gen)
 target_link_libraries(seuil PRIVATE dependencies)
 target_link_libraries(seuil PRIVATE glad)
 target_link_libraries(seuil PRIVATE glm)
+target_link_libraries(seuil PRIVATE lwgl)
+
 
 target_include_directories(
     seuil SYSTEM PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

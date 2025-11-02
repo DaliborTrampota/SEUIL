@@ -19,7 +19,6 @@ layout (std430, binding = 1) readonly buffer Colors {
 
 uniform vec2 uScreenSize;
 
-out vec3 pos;
 out vec2 uv;
 flat out uint type;
 flat out uint roundness;
@@ -36,7 +35,6 @@ void main()
 {
     type = aType;
     uv = aUV;
-    pos = aPos;
     roundness = aBorder.x;
     borderThickness = aBorder.y;
     data = aData;
@@ -54,8 +52,8 @@ void main()
     
     // Convert from [0, width] to [-1, 1]
     vec2 ndc = vec2(
-        (pos.x / uScreenSize.x) * 2.0 - 1.0,
-        1.0 - (pos.y / uScreenSize.y) * 2.0
+        (aPos.x / uScreenSize.x) * 2.0 - 1.0,
+        1.0 - (aPos.y / uScreenSize.y) * 2.0
     );
 
     gl_Position = vec4(ndc, 0.0, 1.0);

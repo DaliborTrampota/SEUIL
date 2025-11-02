@@ -9,6 +9,7 @@ namespace ui {
     class Panel;
     class Image;
     class Button;
+    class Label;
 
     class RendererImpl {
       public:
@@ -27,9 +28,11 @@ namespace ui {
         virtual void renderPanel(const Panel& panel) = 0;
         virtual void renderImage(const Image& image) = 0;
         virtual void renderButton(const Button& button) = 0;
+        virtual void renderLabel(const Label& label) = 0;
 
         virtual unsigned int textureID() const = 0;
         virtual void loadImage(Image& image) = 0;
+        virtual void loadText(Label& label) = 0;
 
       protected:
         glm::ivec2 m_viewportSize;

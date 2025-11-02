@@ -7,7 +7,6 @@ layout(std430, binding = 0) readonly buffer TextureHandles {
 
 out vec4 FragColor;
 
-in vec3 pos;
 in vec2 uv;
 flat in uint type;
 flat in uint roundness;
