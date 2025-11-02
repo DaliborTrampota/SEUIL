@@ -80,7 +80,7 @@ OpenGLRendererImpl::OpenGLRendererImpl(unsigned int fboID, const glm::ivec2& vie
     m_textMaterial.use();
     m_textMaterial.setVec2("uScreenSize", (glm::vec2)viewportSize);
     m_textMaterial.setInt("uMSDF", 0);
-    m_textMaterial.setFloat("pxRange", FontAtlas::PIXEL_RANGE);
+    m_textMaterial.setFloat("pxRange", FontLoader::PIXEL_RANGE);
 
     m_attributes.create();
     m_textAttributes.create();
@@ -197,7 +197,7 @@ void OpenGLRendererImpl::render() {
         m_textMaterial.use();
         m_textAttributes.bind();
         m_textMaterial.setInt("uMSDF", 0);
-        m_textMaterial.setFloat("pxRange", FontAtlas::PIXEL_RANGE);
+        m_textMaterial.setFloat("pxRange", FontLoader::PIXEL_RANGE);
         m_textTexture.bind();
         glDrawArrays(GL_TRIANGLES, 0, m_textAttributes.length());
     }

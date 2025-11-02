@@ -123,11 +123,11 @@ std::vector<const msdf_atlas::GlyphGeometry*> FontLoader::generateText(
 
     // Preprocess newly added glyphs (edge coloring and wrap box)
     for (size_t i = startIndex; i < m_glyphs.size(); ++i) {
-        m_glyphs[i].edgeColoring(&msdfgen::edgeColoringInkTrap, FontAtlas::MAX_CORNER_ANGLE, 0);
+        m_glyphs[i].edgeColoring(&msdfgen::edgeColoringInkTrap, FontLoader::MAX_CORNER_ANGLE, 0);
         m_glyphs[i].wrapBox(
-            FontAtlas::MINIMUM_SCALE,
-            FontAtlas::PIXEL_RANGE / FontAtlas::MINIMUM_SCALE,
-            FontAtlas::MITER_LIMIT
+            FontLoader::MINIMUM_SCALE,
+            FontLoader::PIXEL_RANGE / FontLoader::MINIMUM_SCALE,
+            FontLoader::MITER_LIMIT
         );
     }
 
@@ -171,9 +171,9 @@ FontAtlas FontLoader::packToAtlas(bool dynamic) {
 
     TightAtlasPacker packer;
     packer.setDimensionsConstraint(DimensionsConstraint::SQUARE);
-    packer.setMinimumScale(FontAtlas::MINIMUM_SCALE);
-    packer.setPixelRange(FontAtlas::PIXEL_RANGE);
-    packer.setMiterLimit(FontAtlas::MITER_LIMIT);
+    packer.setMinimumScale(FontLoader::MINIMUM_SCALE);
+    packer.setPixelRange(FontLoader::PIXEL_RANGE);
+    packer.setMiterLimit(FontLoader::MITER_LIMIT);
 
     packer.pack(m_glyphs.data(), m_glyphs.size());
 
