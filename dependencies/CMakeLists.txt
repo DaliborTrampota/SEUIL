@@ -22,3 +22,6 @@ target_include_directories(dependencies INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/in
 
 
 set_target_properties(freetype PROPERTIES FOLDER "Libraries")
+set_target_properties(msdf-atlas-gen PROPERTIES FOLDER "Libraries/MSDF")
+set_target_properties(msdfgen-core PROPERTIES FOLDER "Libraries/MSDF")
+set_target_properties(msdfgen-ext PROPERTIES FOLDER "Libraries/MSDF")
