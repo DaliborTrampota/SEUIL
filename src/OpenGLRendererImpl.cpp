@@ -7,8 +7,7 @@
 #include <UI/elements/Label.h>
 #include <UI/elements/Panel.h>
 
-#include "detail/Quad.h"
-#include "detail/Shader.h"
+#include <UI/detail/Quad.h>
 
 #include <UI/font/FontLoader.h>
 

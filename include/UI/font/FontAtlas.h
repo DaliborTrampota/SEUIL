@@ -5,7 +5,6 @@
 
 
 #include <msdf-atlas-gen/msdf-atlas-gen.h>
-#include "../src/font/ThreadPoolAtlasGenerator.h"
 
 
 namespace ui {

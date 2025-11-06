@@ -3,12 +3,11 @@
 #include <UI/RendererImpl.h>
 
 #include <glm/glm.hpp>
-#include <vector>
 
 #include "../src/detail/BindlessTextures.h"
-#include "../src/detail/Quad.h"
 #include "../src/detail/SSBO.h"
 
+#include <UI/detail/Quad.h>
 #include <UI/font/FontAtlas.h>
 #include <UI/font/FontLoader.h>
 
