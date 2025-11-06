@@ -11,6 +11,34 @@ using namespace msdf_atlas;
 FontAtlas::FontAtlas(AtlasGenerator gen) : m_generator(std::move(gen)) {}
 FontAtlas::FontAtlas(DynAtlasGenerator gen) : m_generator(std::move(gen)) {}
 
+FontAtlas::FontAtlas(FontAtlas&& other) noexcept
+    : m_width(other.m_width),
+      m_height(other.m_height),
+      m_generator(std::move(other.m_generator)) {
+    // Re-acquire bitmap reference from the moved generator
+    if (std::holds_alternative<AtlasGenerator>(m_generator)) {
+        m_bitmap = std::get<AtlasGenerator>(m_generator).atlasStorage();
+    } else {
+        m_bitmap = std::get<DynAtlasGenerator>(m_generator).atlasGenerator().atlasStorage();
+    }
+}
+
+FontAtlas& FontAtlas::operator=(FontAtlas&& other) noexcept {
+    if (this != &other) {
+        m_width = other.m_width;
+        m_height = other.m_height;
+        m_generator = std::move(other.m_generator);
+        
+        // Re-acquire bitmap reference from the moved generator
+        if (std::holds_alternative<AtlasGenerator>(m_generator)) {
+            m_bitmap = std::get<AtlasGenerator>(m_generator).atlasStorage();
+        } else {
+            m_bitmap = std::get<DynAtlasGenerator>(m_generator).atlasGenerator().atlasStorage();
+        }
+    }
+    return *this;
+}
+
 FontAtlas FontAtlas::createStatic(
     int w, int h, const std::vector<msdf_atlas::GlyphGeometry>& glyphs
 ) {

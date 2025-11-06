@@ -30,41 +30,6 @@ FontLoader::FontLoader() {
         throw std::runtime_error("Failed to initialize Freetype");
 }
 
-FontLoader::FontLoader(FontLoader&& other) noexcept
-    : m_ftHandle(other.m_ftHandle),
-      m_loadedFont(other.m_loadedFont),
-      m_loadedFontName(std::move(other.m_loadedFontName)),
-      m_fontGeometries(std::move(other.m_fontGeometries)),
-      m_charsets(std::move(other.m_charsets)),
-      m_glyphs(std::move(other.m_glyphs)) {
-    // Nullify source pointers to prevent double-free
-    other.m_ftHandle = nullptr;
-    other.m_loadedFont = nullptr;
-}
-
-FontLoader& FontLoader::operator=(FontLoader&& other) noexcept {
-    if (this != &other) {
-        // Clean up existing resources
-        unloadFont();
-        if (m_ftHandle) {
-            msdfgen::deinitializeFreetype(m_ftHandle);
-        }
-
-        // Transfer ownership
-        m_ftHandle = other.m_ftHandle;
-        m_loadedFont = other.m_loadedFont;
-        m_loadedFontName = std::move(other.m_loadedFontName);
-        m_fontGeometries = std::move(other.m_fontGeometries);
-        m_charsets = std::move(other.m_charsets);
-        m_glyphs = std::move(other.m_glyphs);
-
-        // Nullify source pointers
-        other.m_ftHandle = nullptr;
-        other.m_loadedFont = nullptr;
-    }
-    return *this;
-}
-
 FontLoader::~FontLoader() {
     unloadFont();
     if (m_ftHandle) {

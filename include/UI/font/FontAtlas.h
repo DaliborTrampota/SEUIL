@@ -15,8 +15,8 @@ namespace ui {
       public:
         FontAtlas(const FontAtlas&) = delete;
         FontAtlas& operator=(const FontAtlas&) = delete;
-        FontAtlas(FontAtlas&&) = default;
-        FontAtlas& operator=(FontAtlas&&) = default;
+        FontAtlas(FontAtlas&&) noexcept;
+        FontAtlas& operator=(FontAtlas&&) noexcept;
 
         using StorageR = msdfgen::BitmapConstRef<msdf_atlas::byte, 3>;
         using StorageW = msdf_atlas::BitmapAtlasStorage<msdf_atlas::byte, 3>;
