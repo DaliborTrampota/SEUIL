@@ -26,7 +26,7 @@ namespace ui::detail {
         glm::uvec3 borderData;
         unsigned int data = 0;
 
-        static constexpr gl::VertexLayout layout() {
+        static gl::VertexLayout layout() {
             return {
                 sizeof(UIVertex),
                 {
@@ -45,7 +45,7 @@ namespace ui::detail {
         glm::vec2 pos;
         glm::vec2 uv;
         unsigned int colorIndex;
-        static constexpr gl::VertexLayout layout() {
+        static gl::VertexLayout layout() {
             return {
                 sizeof(UITextVertex),
                 {
