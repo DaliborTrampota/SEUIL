@@ -176,6 +176,7 @@ void OpenGLRendererImpl::afterRender() {
     m_shaderColors.unbind();
 
     // Restore OpenGL state
+    glEnable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindVertexArray(0);
