@@ -12,4 +12,5 @@ void Label::text(const std::string& text) {
     m_text = text;
     m_textCache.clear();
     m_dirty = true;
+    Renderer::markDirty();
 }
