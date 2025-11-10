@@ -2,6 +2,7 @@
 
 #include <variant>
 #include <vector>
+#include "ThreadPoolAtlasGenerator.h"
 
 
 #include <msdf-atlas-gen/msdf-atlas-gen.h>
