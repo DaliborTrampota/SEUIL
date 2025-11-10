@@ -28,7 +28,7 @@ FontAtlas& FontAtlas::operator=(FontAtlas&& other) noexcept {
         m_width = other.m_width;
         m_height = other.m_height;
         m_generator = std::move(other.m_generator);
-        
+
         // Re-acquire bitmap reference from the moved generator
         if (std::holds_alternative<AtlasGenerator>(m_generator)) {
             m_bitmap = std::get<AtlasGenerator>(m_generator).atlasStorage();
@@ -54,8 +54,10 @@ FontAtlas FontAtlas::createStatic(
     return atlas;
 }
 
-FontAtlas FontAtlas::createDynamic() {
-    return FontAtlas(DynAtlasGenerator());
+FontAtlas FontAtlas::createDynamic(int threadCount) {
+    auto gen = DynAtlasGenerator();
+    gen.atlasGenerator().setThreadCount(threadCount);
+    return FontAtlas(std::move(gen));
 }
 
 void FontAtlas::addGlyphs(msdf_atlas::GlyphGeometry* glyphs, int count) {

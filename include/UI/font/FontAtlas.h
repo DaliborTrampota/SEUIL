@@ -21,7 +21,8 @@ namespace ui {
         using StorageW = msdf_atlas::BitmapAtlasStorage<msdf_atlas::byte, 3>;
         using AtlasGenerator =
             msdf_atlas::ImmediateAtlasGenerator<float, 3, msdf_atlas::msdfGenerator, StorageW>;
-        using DynAtlasGenerator = msdf_atlas::DynamicAtlas<AtlasGenerator>;
+        using DynAtlasGenerator = msdf_atlas::DynamicAtlas<
+            ThreadPoolAtlasGenerator<float, 3, msdf_atlas::msdfGenerator, StorageW>>;
 
         /// @brief Create a static atlas; new glyphs cannot be added after creation
         /// @param w Width of the atlas in pixels
@@ -35,7 +36,7 @@ namespace ui {
 
         /// @brief Create a dynamic atlas; more characters can be added to it even after it has been created
         /// @note Glyphs must have edge coloring and wrap box already applied
-        static FontAtlas createDynamic();
+        static FontAtlas createDynamic(int threadCount = 2);
 
         /// @brief Add preprocessed glyphs to a dynamic atlas
         /// @note Glyphs must have edge coloring and wrap box already applied

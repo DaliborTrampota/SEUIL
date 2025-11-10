@@ -3,6 +3,13 @@
 
 #include <algorithm>
 
+
+#ifdef _WIN32
+#define NOMINMAX
+#include <windows.h>
+#endif
+
+
 using namespace msdf_atlas;
 
 template <typename T, int N, GeneratorFunction<T, N> GEN_FN, class AtlasStorage>
@@ -200,6 +207,9 @@ ThreadPoolAtlasGenerator<T, N, GEN_FN, AtlasStorage>::getLayout() const {
 
 template <typename T, int N, GeneratorFunction<T, N> GEN_FN, class AtlasStorage>
 void ThreadPoolAtlasGenerator<T, N, GEN_FN, AtlasStorage>::loop(int threadNo) {
+#ifdef _WIN32
+    SetThreadDescription(GetCurrentThread(), L"msdfGenerator");
+#endif
     while (true) {
         Job job;
         {
