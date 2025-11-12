@@ -2,17 +2,18 @@
 
 #include <glad/glad.h>
 
+#include <UI/detail/Quad.h>
 #include <UI/elements/Button.h>
 #include <UI/elements/Image.h>
 #include <UI/elements/Label.h>
 #include <UI/elements/Panel.h>
-
-#include <UI/detail/Quad.h>
-
 #include <UI/font/FontLoader.h>
 
 #include <LWGL/render/Shader.h>
+#include <LWGL/texture/ImageData.h>
 #include <LWGL/texture/Texture2D.h>
+#include <LWGL/texture/TextureBase.h>
+
 
 #include <utility>  // for std::swap
 
@@ -61,7 +62,8 @@ OpenGLRendererImpl::OpenGLRendererImpl(unsigned int fboID, const glm::ivec2& vie
       ),
       m_attributes(GL_DYNAMIC_DRAW),
       m_textAttributes(GL_DYNAMIC_DRAW),
-      m_fboID(fboID),
+      m_fbo({gl::FBOAttachment::DepthStencil}, gl::FBO::Target::ReadDraw),
+      m_outputTexture(0),
       m_shaderColors(1),
       m_fontAtlas(FontAtlas::createDynamic()) {
     m_viewportSize = viewportSize;
@@ -85,18 +87,25 @@ OpenGLRendererImpl::OpenGLRendererImpl(unsigned int fboID, const glm::ivec2& vie
     m_textAttributes.create();
     m_shaderColors.create({});
 
-    m_textTexture.create(gl::Settings());  // linear interpolation
-}
-
-OpenGLRendererImpl::~OpenGLRendererImpl() {
-    if (m_fboTextureID) {
-        glDeleteTextures(1, &m_fboTextureID);
-    }
+    m_textTexture.create(gl::Settings::LinearClampToEdge());  // linear interpolation
 }
 
 void OpenGLRendererImpl::resize(const glm::ivec2& newSize) {
+    // Only resize if size actually changed
+    if (m_viewportSize == newSize) {
+        return;
+    }
+
     m_viewportSize = newSize;
-    setupFBO();
+
+    m_outputTexture.bind();
+    m_outputTexture.loadRaw(newSize.x, newSize.y, 4, gl::ImageFormat::RGBA, nullptr);
+    m_rbo.create(newSize.x, newSize.y, gl::ImageFormat::DEPTH_STENCIL, 0);
+
+    // Re-attach RBO to FBO since storage was recreated
+    m_fbo.bind();
+    m_fbo.attachRenderBuffer(m_rbo, gl::FBOAttachment::DepthStencil, gl::FBO::Target::ReadDraw);
+    m_fbo.unbind();
 
     m_material.use();
     m_material.setVec2("uScreenSize", (glm::vec2)m_viewportSize);
@@ -105,56 +114,26 @@ void OpenGLRendererImpl::resize(const glm::ivec2& newSize) {
 }
 
 void OpenGLRendererImpl::setupFBO() {
-    // Delete old texture and recreate with new size
-    if (m_fboTextureID) {
-        glDeleteTextures(1, &m_fboTextureID);
-    }
-    if (m_fboID == 0) {
-        glGenFramebuffers(1, &m_fboID);
-    }
-    glBindFramebuffer(GL_FRAMEBUFFER, m_fboID);
+    m_outputTexture.create(gl::Settings::LinearClampToEdge());
+    m_outputTexture.loadRaw(m_viewportSize.x, m_viewportSize.y, 4, gl::ImageFormat::RGBA, nullptr);
 
-    glGenTextures(1, &m_fboTextureID);
-    glBindTexture(GL_TEXTURE_2D, m_fboTextureID);
+    m_fbo.bind();
+    m_fbo.bindTexture(gl::FBOAttachment::Color, m_outputTexture.id());
 
-    glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_RGBA,
-        m_viewportSize.x,
-        m_viewportSize.y,
-        0,
-        GL_RGBA,
-        GL_UNSIGNED_BYTE,
-        nullptr
-    );
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_fboTextureID, 0);
-
-    glGenRenderbuffers(1, &m_fboRenderbufferID);
-    glBindRenderbuffer(GL_RENDERBUFFER, m_fboRenderbufferID);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_viewportSize.x, m_viewportSize.y);
-    glFramebufferRenderbuffer(
-        GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_fboRenderbufferID
-    );
-
-    assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+    m_rbo.create(m_viewportSize.x, m_viewportSize.y, gl::ImageFormat::DEPTH_STENCIL, 0);
+    m_fbo.attachRenderBuffer(m_rbo, gl::FBOAttachment::DepthStencil, gl::FBO::Target::ReadDraw);
+    assert(m_fbo.checkCompleteness() == 0);
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    m_fbo.unbind();
     //glBindTexture(GL_TEXTURE_2D, 0);
     //glBindRenderbuffer(GL_RENDERBUFFER, 0);
 }
 
 void OpenGLRendererImpl::beforeRender() {
-    glBindFramebuffer(GL_FRAMEBUFFER, m_fboID);
+    m_fbo.bind();
     glDisable(GL_DEPTH_TEST);
 
     glEnable(GL_BLEND);
@@ -421,15 +400,18 @@ void OpenGLRendererImpl::loadText(Label& label) {
     //m_fontAtlas = m_fontLoader.packToAtlas(); // Switch to static atlas
 
     const unsigned char* data = m_fontAtlas.data();
+    int atlasWidth = m_fontAtlas.width();
+    int atlasHeight = m_fontAtlas.height();
 
     m_textTexture.bind();
-    m_textTexture.loadRaw(
-        m_fontAtlas.width(),
-        m_fontAtlas.height(),
-        3,
-        gl::ImageFormat::RGB,
-        const_cast<unsigned char*>(data)
-    );
+
+    if (atlasWidth != m_textTexture.width() || atlasHeight != m_textTexture.height()) {
+        m_textTexture.loadRaw(
+            atlasWidth, atlasHeight, 3, gl::ImageFormat::RGB, const_cast<unsigned char*>(data)
+        );
+    } else {
+        m_textTexture.update(gl::ImageFormat::RGB, const_cast<unsigned char*>(data));
+    }
 
     label.m_textCache = glyphs;
     label.m_dirty = false;

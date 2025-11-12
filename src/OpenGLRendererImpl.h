@@ -13,14 +13,16 @@
 
 
 #include <LWGL/buffer/Attributes.h>
+#include <LWGL/buffer/FBO.h>
+#include <LWGL/buffer/RBO.h>
 #include <LWGL/render/Material.h>
 #include <LWGL/texture/Texture2D.h>
+
 
 namespace ui {
     class OpenGLRendererImpl : public RendererImpl {
       public:
         OpenGLRendererImpl(unsigned int fboID, const glm::ivec2& viewportSize);
-        ~OpenGLRendererImpl();
 
 
       private:
@@ -28,9 +30,9 @@ namespace ui {
         ui::FontLoader m_fontLoader;
         ui::FontAtlas m_fontAtlas;
 
-        unsigned int m_fboID = 0;
-        unsigned int m_fboTextureID = 0;
-        unsigned int m_fboRenderbufferID = 0;
+        gl::FBO m_fbo;
+        gl::RBO m_rbo;
+        gl::Texture2D m_outputTexture;
 
         gl::Material m_material;
         gl::Material m_textMaterial;
@@ -54,7 +56,7 @@ namespace ui {
         void renderButton(const Button& button) override;
         void renderLabel(const Label& label) override;
 
-        unsigned int textureID() const override { return m_fboTextureID; }
+        unsigned int textureID() const override { return m_outputTexture.id(); }
         void loadImage(Image& image) override;
         void loadText(Label& label) override;
         unsigned int findOrStoreColor(const glm::vec4& color);
