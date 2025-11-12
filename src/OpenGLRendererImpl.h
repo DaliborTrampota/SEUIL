@@ -61,9 +61,7 @@ namespace ui {
         void loadText(Label& label) override;
         unsigned int findOrStoreColor(const glm::vec4& color);
 
-
         void setupFBO();
-        void setupBuffer();
 
         void beforeRender();
         void afterRender();
