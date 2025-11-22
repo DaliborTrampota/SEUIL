@@ -22,7 +22,7 @@
 namespace ui {
     class OpenGLRendererImpl : public RendererImpl {
       public:
-        OpenGLRendererImpl(unsigned int fboID, const glm::ivec2& viewportSize);
+        OpenGLRendererImpl(const glm::ivec2& viewportSize);
 
 
       private:

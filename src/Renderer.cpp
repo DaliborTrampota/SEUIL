@@ -1,8 +1,9 @@
 #include <UI/Renderer.h>
 
 #include <UI/Events.h>
-#include <UI/elements/Panel.h>
 #include <UI/elements/Label.h>
+#include <UI/elements/Panel.h>
+
 
 #include "../src/OpenGLRendererImpl.h"
 
@@ -14,7 +15,7 @@ using namespace ui;
 Renderer::Renderer(RendererType type, const glm::ivec2& viewportSize) {
     switch (type) {
         case RendererType::OpenGL:
-            m_impl = std::make_unique<OpenGLRendererImpl>(0, viewportSize);
+            m_impl = std::make_unique<OpenGLRendererImpl>(viewportSize);
             break;
     }
 }

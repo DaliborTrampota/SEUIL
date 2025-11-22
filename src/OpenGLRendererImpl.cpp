@@ -55,14 +55,14 @@ unsigned int OpenGLRendererImpl::findOrStoreColor(const glm::vec4& color) {
     return std::distance(data.begin(), it);
 }
 
-OpenGLRendererImpl::OpenGLRendererImpl(unsigned int fboID, const glm::ivec2& viewportSize)
+OpenGLRendererImpl::OpenGLRendererImpl(const glm::ivec2& viewportSize)
     : m_material("resources/shaders/SEUIL.vert", "resources/shaders/SEUIL.frag", "SEUIL"),
       m_textMaterial(
           "resources/shaders/SEUIL_TEXT.vert", "resources/shaders/SEUIL_TEXT.frag", "SEUIL_TEXT"
       ),
       m_attributes(GL_DYNAMIC_DRAW),
       m_textAttributes(GL_DYNAMIC_DRAW),
-      m_fbo({gl::FBOAttachment::DepthStencil}, gl::FBO::Target::ReadDraw),
+      m_fbo({}, gl::FBO::Target::ReadDraw),
       m_outputTexture(0),
       m_shaderColors(1),
       m_fontAtlas(FontAtlas::createDynamic()) {
@@ -100,11 +100,12 @@ void OpenGLRendererImpl::resize(const glm::ivec2& newSize) {
 
     m_outputTexture.bind();
     m_outputTexture.loadRaw(newSize.x, newSize.y, 4, gl::ImageFormat::RGBA, nullptr);
-    m_rbo.create(newSize.x, newSize.y, gl::ImageFormat::DEPTH_STENCIL, 0);
+    m_rbo.create(newSize.x, newSize.y, GL_DEPTH24_STENCIL8, 0);
 
     // Re-attach RBO to FBO since storage was recreated
     m_fbo.bind();
     m_fbo.attachRenderBuffer(m_rbo, gl::FBOAttachment::DepthStencil, gl::FBO::Target::ReadDraw);
+    assert(m_fbo.checkCompleteness() == 0);
     m_fbo.unbind();
 
     m_material.use();
@@ -120,15 +121,14 @@ void OpenGLRendererImpl::setupFBO() {
     m_fbo.bind();
     m_fbo.bindTexture(gl::FBOAttachment::Color, m_outputTexture.id());
 
-    m_rbo.create(m_viewportSize.x, m_viewportSize.y, gl::ImageFormat::DEPTH_STENCIL, 0);
+    m_rbo.create(m_viewportSize.x, m_viewportSize.y, GL_DEPTH24_STENCIL8, 0);
     m_fbo.attachRenderBuffer(m_rbo, gl::FBOAttachment::DepthStencil, gl::FBO::Target::ReadDraw);
     assert(m_fbo.checkCompleteness() == 0);
 
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    m_fbo.clearActive({0.0f, 0.0f, 0.0f, 0.0f}, 1.0f, 0);
 
     m_fbo.unbind();
-    m_outputTexture.unbind();
+    //m_outputTexture.unbind();
     //glBindRenderbuffer(GL_RENDERBUFFER, 0);
 }
 
