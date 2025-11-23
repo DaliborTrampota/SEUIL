@@ -62,7 +62,7 @@ OpenGLRendererImpl::OpenGLRendererImpl(const glm::ivec2& viewportSize)
       ),
       m_attributes(GL_DYNAMIC_DRAW),
       m_textAttributes(GL_DYNAMIC_DRAW),
-      m_fbo({}, gl::FBO::Target::ReadDraw),
+      m_fbo(),
       m_outputTexture(0),
       m_shaderColors(1),
       m_fontAtlas(FontAtlas::createDynamic()) {
