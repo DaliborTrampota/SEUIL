@@ -15,7 +15,7 @@
 #include <LWGL/buffer/Attributes.h>
 #include <LWGL/buffer/FBO.h>
 #include <LWGL/buffer/RBO.h>
-#include <LWGL/render/Material.h>
+#include <LWGL/render/ShaderProgram.h>
 #include <LWGL/texture/Texture2D.h>
 
 
@@ -34,8 +34,8 @@ namespace ui {
         gl::RBO m_rbo;
         gl::Texture2D m_outputTexture;
 
-        gl::Material m_material;
-        gl::Material m_textMaterial;
+        gl::ShaderProgram m_material;
+        gl::ShaderProgram m_textMaterial;
 
         gl::Attributes<detail::UIVertex> m_attributes;
         gl::Attributes<detail::UITextVertex> m_textAttributes;
