@@ -50,6 +50,7 @@ void main() {
 
 
     // Convert from [0, width] to [-1, 1]
+    // NDC has Y inverted, meaning increasing Y goes down on the screen
     vec2 ndc = vec2((aPos.x / uScreenSize.x) * 2.0 - 1.0, 1.0 - (aPos.y / uScreenSize.y) * 2.0);
 
     gl_Position = vec4(ndc, 0.0, 1.0);

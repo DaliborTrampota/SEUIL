@@ -31,7 +31,6 @@ void Image::loadTexture(const std::string& texturePath) {
         return;
 
     ImageData img;
-    stbi_set_flip_vertically_on_load(true);
     img.data = stbi_load(texturePath.c_str(), &img.width, &img.height, &img.channels, 0);
 
     if (!img.data) {

@@ -191,12 +191,13 @@ detail::Quad OpenGLRendererImpl::makeQuad(const glm::ivec4& posSize) const {
     glm::vec2 BR = {posSize.x + posSize.z, posSize.y + posSize.w};
 
     detail::Quad quad;
-    quad.vertices[0] = {BR, glm::vec2(1.0f, 0.0f)};
-    quad.vertices[1] = {TL, glm::vec2(0.0f, 1.0f)};
-    quad.vertices[2] = {BL, glm::vec2(0.0f, 0.0f)};
-    quad.vertices[3] = {TL, glm::vec2(0.0f, 1.0f)};
-    quad.vertices[4] = {BR, glm::vec2(1.0f, 0.0f)};
-    quad.vertices[5] = {TR, glm::vec2(1.0f, 1.0f)};
+    // The vert shader's NDC has Y inverted
+    quad.vertices[0] = {BR, glm::vec2(1.0f, 1.0f)};
+    quad.vertices[1] = {TL, glm::vec2(0.0f, 0.0f)};
+    quad.vertices[2] = {BL, glm::vec2(0.0f, 1.0f)};
+    quad.vertices[3] = {TL, glm::vec2(0.0f, 0.0f)};
+    quad.vertices[4] = {BR, glm::vec2(1.0f, 1.0f)};
+    quad.vertices[5] = {TR, glm::vec2(1.0f, 0.0f)};
 
     return quad;
 }

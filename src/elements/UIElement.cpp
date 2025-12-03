@@ -78,6 +78,7 @@ glm::ivec2 UIElement::adjustAnchorPoint(
     bool x = left || right;
     bool y = top || bottom;
 
+    // shift in the middle of the parent and by half of the element so it is centered (same for !y)
     if (!x)
         posSize.x = parentPosSize.z / 2 - posSize.z / 2;
 
