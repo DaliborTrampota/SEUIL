@@ -37,13 +37,13 @@ void renderRoundedCorners(uint r1, uint r2, vec2 panelSize, vec2 uvPixelPos, vec
     vec2 cornerTR = vec2(-1, -1);
     vec2 cornerBL = vec2(1, 1);
     vec2 cornerBR = vec2(-1, 1);
-    
+
     if (uvPixelPos.x < r1 && uvPixelPos.y > panelSize.y - r1) {
-        if (distance(uvPixelPos, TL + cornerTL * r1) > r2) 
+        if (distance(uvPixelPos, TL + cornerTL * r1) > r2)
             FragColor = color;
         if (distance(uvPixelPos, TL + cornerTL * r1) > r1)
             discard;
-    } 
+    }
 
     if (uvPixelPos.x > panelSize.x - r1 && uvPixelPos.y > panelSize.y - r1) {
         if (distance(uvPixelPos, TR + cornerTR * r1) > r2)
@@ -66,15 +66,14 @@ void renderRoundedCorners(uint r1, uint r2, vec2 panelSize, vec2 uvPixelPos, vec
     }
 }
 
-void main()
-{
-
-    if (type == uint(1)) { // Image
-        FragColor = vec4(texture(images[0], uv).rgb, color.a);
+void main() {
+    if (type == uint(1)) {  // Image
+        vec4 texColor = texture(images[data], uv);
+        FragColor = vec4(texColor.rgb, texColor.a * color.a);
     } else {
         FragColor = color;
     }
-    
+
     if (roundness > 0.0f) {
         // fwidth gives us the rate of change per screen pixel
         vec2 uvDeriv = fwidth(uv);
@@ -82,7 +81,7 @@ void main()
         vec2 panelSize = 1.0 / uvDeriv;
         // local pixel space (0 to panelSize)
         vec2 localPos = uv * panelSize;
-        
+
         renderRoundedCorners(roundness, borderThickness, panelSize, localPos, borderColor);
     }
 
@@ -91,12 +90,9 @@ void main()
         vec2 panelSize = 1.0 / uvDeriv;
         vec2 localPos = uv * panelSize;
 
-        if (localPos.x < borderThickness || 
-            localPos.x > panelSize.x - borderThickness || 
-            localPos.y < borderThickness || 
-            localPos.y > panelSize.y - borderThickness) {
+        if (localPos.x < borderThickness || localPos.x > panelSize.x - borderThickness ||
+            localPos.y < borderThickness || localPos.y > panelSize.y - borderThickness) {
             FragColor = borderColor;
         }
-
     }
 }

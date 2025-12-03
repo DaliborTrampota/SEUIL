@@ -51,6 +51,7 @@ size_t BindlessTextures::add(
     );
 
     GLuint64 handle = glGetTextureHandleARB(tex);
+    printf("Texture handle: %llu\n", handle);
     //glMakeTextureHandleResidentARB(handle);
 
     m_textureHandles.push_back(handle);
