@@ -11,7 +11,7 @@ layout(location = 4) in uvec3 aBorder;  // roundness, border thickness, border c
 // Button: the button state (0: normal, 1: hovered, 2: pressed)
 layout(location = 5) in uint aData;
 
-layout(location = 7) in uvec3 aButtonColorIndices;
+// layout(location = 7) in uvec3 aButtonColorIndices;
 
 layout(std430, binding = 1) readonly buffer Colors {
     vec4 colorPalette[];
@@ -45,8 +45,8 @@ void main() {
     }
 
     borderColor = vec4(colorPalette[aBorder.z].rgb, color.a);
-    hoverColor = colorPalette[aButtonColorIndices.x];
-    pressedColor = colorPalette[aButtonColorIndices.y];
+    // hoverColor = colorPalette[aButtonColorIndices.x];
+    // pressedColor = colorPalette[aButtonColorIndices.y];
 
 
     // Convert from [0, width] to [-1, 1]

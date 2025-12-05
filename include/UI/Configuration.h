@@ -102,8 +102,8 @@ namespace ui {
     template <>
     struct Style<Image> {
         unsigned int roundRadius;
-        float opacity;
-        bool pixelated;
+        float opacity = 1.0f;
+        bool pixelated = false;
     };
 
     template <>
