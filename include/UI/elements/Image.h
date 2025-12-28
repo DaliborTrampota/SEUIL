@@ -1,12 +1,11 @@
 #pragma once
 
-#include <UI/elements/UIElement.h>
 #include "../Configuration.h"
-#include "../Events.h"
+#include "UIElement.h"
 
 
-#include <memory>
-#include <string>
+#include <filesystem>
+namespace fs = std::filesystem;
 
 namespace ui {
 
@@ -28,7 +27,7 @@ namespace ui {
       public:
         template <typename U, typename V, typename S, typename T>
         Image(
-            const char* texturePath,
+            const fs::path& sourcePath,
             Pos<U, V> position,
             Size<S, T> size,
             Style<Image> style = {},
@@ -36,7 +35,7 @@ namespace ui {
         )
             : UIElement(position, size, anchorPoint),
               m_style(style) {
-            loadTexture(texturePath);
+            loadTexture(sourcePath);
         }
 
         //void mouseEvent(const MouseEvent& event) override {};
@@ -58,6 +57,6 @@ namespace ui {
         size_t m_index = std::numeric_limits<size_t>::max();
 
       private:
-        void loadTexture(const std::string& texturePath);
+        void loadTexture(const fs::path& texturePath);
     };
 }  // namespace ui

@@ -19,19 +19,19 @@ ImageData::ImageData(ImageData&& other) noexcept
       height(other.height),
       channels(other.channels),
       data(other.data) {
-    other.data = nullptr;  // prevent double free
+    other.data = nullptr;
 }
 
 void Image::visit(Renderer& renderer) {
     renderer.renderImage(*this);
 }
 
-void Image::loadTexture(const std::string& texturePath) {
+void Image::loadTexture(const fs::path& texturePath) {
     if ((m_textureData = Renderer::imageDataMgr.get(texturePath)))
         return;
 
     ImageData img;
-    img.data = stbi_load(texturePath.c_str(), &img.width, &img.height, &img.channels, 0);
+    img.data = stbi_load(texturePath.string().c_str(), &img.width, &img.height, &img.channels, 0);
 
     if (!img.data) {
         throw std::runtime_error(std::format("Failed to load image: {}", stbi_failure_reason()));
