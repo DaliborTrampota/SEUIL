@@ -5,6 +5,7 @@
 
 
 #include <filesystem>
+
 namespace fs = std::filesystem;
 
 namespace ui {
@@ -16,6 +17,8 @@ namespace ui {
         int height;
         int channels;
         unsigned char* data;
+
+        size_t index = std::numeric_limits<size_t>::max();
 
         ImageData() = default;
         // TODO move ctor
@@ -49,6 +52,8 @@ namespace ui {
         void index(size_t index) { m_index = index; }
 
         const ImageData* textureData() const { return m_textureData; }
+
+        void setSource(const fs::path& sourcePath);
 
       protected:
         Style<Image> m_style;

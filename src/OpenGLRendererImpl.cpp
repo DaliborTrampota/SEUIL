@@ -368,6 +368,10 @@ void OpenGLRendererImpl::renderLabel(const Label& label) {
 
 void OpenGLRendererImpl::loadImage(Image& image) {
     const ImageData* textureData = image.textureData();
+    if (textureData->index != std::numeric_limits<size_t>::max()) {
+        image.index(textureData->index);
+        return;
+    }
 
     size_t idx = m_bindlessTextures.add(
         textureData->data,
@@ -385,6 +389,8 @@ void OpenGLRendererImpl::loadImage(Image& image) {
         textureData->channels
     );
 
+    // this is fine :) I guess (I dont want the public api to be non-const, this is controlled  env)
+    const_cast<ImageData*>(textureData)->index = idx;
     image.index(idx);
 }
 

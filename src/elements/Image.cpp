@@ -26,6 +26,12 @@ void Image::visit(Renderer& renderer) {
     renderer.renderImage(*this);
 }
 
+void Image::setSource(const fs::path& sourcePath) {
+    loadTexture(sourcePath);
+    m_index = std::numeric_limits<size_t>::max();
+    Renderer::markDirty();
+}
+
 void Image::loadTexture(const fs::path& texturePath) {
     if ((m_textureData = Renderer::imageDataMgr.get(texturePath)))
         return;
