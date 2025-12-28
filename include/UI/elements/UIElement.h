@@ -44,6 +44,10 @@ namespace ui {
         Signal<const HoverEvent&> enterSignal;
         Signal<const HoverEvent&> exitSignal;
 
+        void setSize(Sizes size);
+        void setPosition(Positions position);
+        void setAnchorPoint(AnchorPoint anchorPoint);
+
       protected:
         AnchorPoint m_anchorPoint;
         Positions m_position;

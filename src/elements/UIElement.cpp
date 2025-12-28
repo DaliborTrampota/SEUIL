@@ -1,12 +1,29 @@
 #include <UI/elements/UIElement.h>
 
 #include <UI/Events.h>
+#include <UI/Renderer.h>
 
 using namespace ui;
 
 bool UIElement::contains(const glm::vec2& point) const {
     return point.x >= m_calculatedDims.x && point.x <= m_calculatedDims.x + m_calculatedDims.z &&
            point.y >= m_calculatedDims.y && point.y <= m_calculatedDims.y + m_calculatedDims.w;
+}
+
+
+void UIElement::setSize(Sizes size) {
+    m_size = size;
+    Renderer::markDirty();
+}
+
+void UIElement::setPosition(Positions position) {
+    m_position = position;
+    Renderer::markDirty();
+}
+
+void UIElement::setAnchorPoint(AnchorPoint anchorPoint) {
+    m_anchorPoint = anchorPoint;
+    Renderer::markDirty();
 }
 
 glm::ivec4 UIElement::calculateSizeAndPosition(const glm::ivec4& parentPosSize) {
