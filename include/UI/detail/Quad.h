@@ -15,6 +15,7 @@ namespace ui::detail {
         Image = 1,
         Button = 2,
         Label = 3,
+        ImagePanel = 4,
     };
 
 
@@ -25,6 +26,7 @@ namespace ui::detail {
         QuadType type;
         glm::uvec3 borderData;
         unsigned int data = 0;
+        float floatData = 0.0f;
 
         static gl::VertexLayout layout() {
             return {
@@ -36,6 +38,7 @@ namespace ui::detail {
                     {3, gl::VertexAttribute::UInt, 1, offsetof(UIVertex, type)},
                     {4, gl::VertexAttribute::UInt, 3, offsetof(UIVertex, borderData)},
                     {5, gl::VertexAttribute::UInt, 1, offsetof(UIVertex, data)},
+                    {6, gl::VertexAttribute::Float, 1, offsetof(UIVertex, floatData)},
                 },
             };
         }

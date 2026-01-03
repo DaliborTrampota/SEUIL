@@ -14,10 +14,12 @@ flat in uint borderThickness;
 
 in vec4 color;
 in vec4 borderColor;
-in vec4 hoverColor;
-in vec4 pressedColor;
+// in vec4 hoverColor;
+// in vec4 pressedColor;
 
 flat in uint data;
+flat in float floatData;
+flat in uint imageIndex;
 
 
 bool perfectBorderRadius = true;
@@ -67,8 +69,8 @@ void renderRoundedCorners(uint r1, uint r2, vec2 panelSize, vec2 uvPixelPos, vec
 }
 
 void main() {
-    if (type == uint(1)) {  // Image
-        vec4 texColor = texture(images[data], uv);
+    if (type == uint(1) || type == uint(4)) {  // Image or ImagePanel
+        vec4 texColor = texture(images[imageIndex], uv);
         FragColor = vec4(texColor.rgb, texColor.a * color.a);
     } else {
         FragColor = color;

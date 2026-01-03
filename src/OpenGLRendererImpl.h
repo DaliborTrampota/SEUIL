@@ -52,12 +52,13 @@ namespace ui {
 
         void render() override;
         void renderPanel(const Panel& panel) override;
+        void renderImagePanel(const ImagePanel& imagePanel) override;
         void renderImage(const Image& image) override;
         void renderButton(const Button& button) override;
         void renderLabel(const Label& label) override;
 
         unsigned int textureID() const override { return m_outputTexture.id(); }
-        void loadImage(Image& image) override;
+        void loadImage(ImageBase* image, bool pixelated) override;
         void loadText(Label& label) override;
         unsigned int findOrStoreColor(const glm::vec4& color);
 

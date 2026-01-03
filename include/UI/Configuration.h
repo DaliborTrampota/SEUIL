@@ -1,8 +1,10 @@
 #pragma once
 
 #include <concepts>
+#include <filesystem>
 #include <glm/glm.hpp>
 #include <string>
+
 
 namespace ui {
 
@@ -84,6 +86,7 @@ namespace ui {
     struct Style;
 
     class Panel;
+    class ImagePanel;
     class Image;
     class Button;
     class Label;
@@ -100,8 +103,16 @@ namespace ui {
     };
 
     template <>
+    struct Style<ImagePanel> {
+        std::filesystem::path backgroundImage;
+        float opacity = 1.0f;
+        bool pixelated = false;
+        unsigned int roundRadius = 0;
+    };
+
+    template <>
     struct Style<Image> {
-        unsigned int roundRadius;
+        unsigned int roundRadius = 0;
         float opacity = 1.0f;
         bool pixelated = false;
     };

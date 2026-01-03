@@ -10,6 +10,7 @@ layout(location = 4) in uvec3 aBorder;  // roundness, border thickness, border c
 // Image: the texture index for image in frag shader
 // Button: the button state (0: normal, 1: hovered, 2: pressed)
 layout(location = 5) in uint aData;
+layout(location = 6) in float aFloatData;
 
 // layout(location = 7) in uvec3 aButtonColorIndices;
 
@@ -26,10 +27,12 @@ flat out uint borderThickness;
 
 flat out vec4 color;
 flat out vec4 borderColor;
-flat out vec4 hoverColor;
-flat out vec4 pressedColor;
+// flat out vec4 hoverColor;
+// flat out vec4 pressedColor;
 
+flat out uint imageIndex;
 flat out uint data;
+flat out float floatData;
 
 void main() {
     type = aType;
@@ -37,9 +40,11 @@ void main() {
     roundness = aBorder.x;
     borderThickness = aBorder.y;
     data = aData;
+    floatData = aFloatData;
 
-    if (type == uint(1)) {  // Image
-        color = vec4(1.0, 1.0, 1.0, aColorIndex);
+    if (type == uint(1) || type == uint(4)) {  // Image or ImagePanel
+        imageIndex = aColorIndex;
+        color = vec4(1.0, 1.0, 1.0, aFloatData);
     } else {
         color = colorPalette[aColorIndex];
     }

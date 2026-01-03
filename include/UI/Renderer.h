@@ -32,6 +32,7 @@ namespace ui {
         void setViewportSize(const glm::ivec2& size);
 
         void renderPanel(Panel& panel);
+        void renderImagePanel(ImagePanel& imagePanel);
         void renderImage(Image& image);
         void renderButton(Button& button);
         void renderLabel(Label& label);

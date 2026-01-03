@@ -9,6 +9,10 @@ void Panel::addChild(std::shared_ptr<UIElement> child) {
     m_children.push_back(std::move(child));
 }
 
+void Panel::removeChild(std::shared_ptr<UIElement> child) {
+    m_children.erase(std::remove(m_children.begin(), m_children.end(), child), m_children.end());
+}
+
 void Panel::mouseEvent(const MouseEvent& event) {
     UIElement::mouseEvent(event);
 

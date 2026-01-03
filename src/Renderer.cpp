@@ -1,6 +1,7 @@
 #include <UI/Renderer.h>
 
 #include <UI/Events.h>
+#include <UI/elements/ImagePanel.h>
 #include <UI/elements/Label.h>
 #include <UI/elements/Panel.h>
 
@@ -64,9 +65,17 @@ void Renderer::layoutElement(UIElement& element, const glm::ivec4& parentDims) {
             layoutElement(*child, calculatedDims);
         }
     }
+    if (auto* imagePanel = dynamic_cast<ImagePanel*>(&element)) {
+        if (imagePanel->index() == std::numeric_limits<size_t>::max()) {
+            m_impl->loadImage(imagePanel, imagePanel->style_c().pixelated);
+        }
+        for (auto& child : imagePanel->children()) {
+            layoutElement(*child, calculatedDims);
+        }
+    }
     if (auto* image = dynamic_cast<Image*>(&element)) {
         if (image->index() == std::numeric_limits<size_t>::max()) {
-            m_impl->loadImage(*image);
+            m_impl->loadImage(image, image->style_c().pixelated);
         }
     }
     if (auto* label = dynamic_cast<Label*>(&element)) {
@@ -86,6 +95,14 @@ void Renderer::renderPanel(Panel& panel) {
     m_impl->renderPanel(panel);
 
     for (auto& child : panel.children()) {
+        child->visit(*this);
+    }
+}
+
+void Renderer::renderImagePanel(ImagePanel& imagePanel) {
+    m_impl->renderImagePanel(imagePanel);
+
+    for (auto& child : imagePanel.children()) {
         child->visit(*this);
     }
 }

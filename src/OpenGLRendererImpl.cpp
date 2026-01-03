@@ -5,9 +5,11 @@
 #include <UI/detail/Quad.h>
 #include <UI/elements/Button.h>
 #include <UI/elements/Image.h>
+#include <UI/elements/ImagePanel.h>
 #include <UI/elements/Label.h>
 #include <UI/elements/Panel.h>
 #include <UI/font/FontLoader.h>
+
 
 #include <LWGL/render/Shader.h>
 #include <LWGL/texture/ImageData.h>
@@ -244,6 +246,24 @@ void OpenGLRendererImpl::renderPanel(const Panel& panel) {
     }
 }
 
+void OpenGLRendererImpl::renderImagePanel(const ImagePanel& panel) {
+    const auto& style = panel.style_c();
+    if (style.opacity == 0.f)
+        return;
+
+    detail::Quad quad = makeQuad(panel.m_calculatedDims);
+
+    unsigned int imageIndex = panel.index();
+
+    for (auto& vert : quad.vertices) {
+        vert.floatData = style.opacity;
+        vert.colorIndex = imageIndex;
+        vert.type = detail::QuadType::ImagePanel;
+        vert.borderData = {style.roundRadius, 0, 0};
+        m_attributes.move(std::move(vert));
+    }
+}
+
 void OpenGLRendererImpl::renderImage(
     const Image& image
 ) {  // TODO dont add the color into SSBO since its always 1.0f
@@ -258,8 +278,8 @@ void OpenGLRendererImpl::renderImage(
     for (auto& vert : quad.vertices) {
         vert.borderData = {style.roundRadius, 0, 0};
         vert.type = detail::QuadType::Image;
-        vert.data = idx;
-        vert.colorIndex = style.opacity;
+        vert.floatData = style.opacity;
+        vert.colorIndex = idx;
         m_attributes.move(std::move(vert));
     }
 }
@@ -366,19 +386,15 @@ void OpenGLRendererImpl::renderLabel(const Label& label) {
     }
 }
 
-void OpenGLRendererImpl::loadImage(Image& image) {
-    const ImageData* textureData = image.textureData();
+void OpenGLRendererImpl::loadImage(ImageBase* image, bool pixelated) {
+    const ImageData* textureData = image->textureData();
     if (textureData->index != std::numeric_limits<size_t>::max()) {
-        image.index(textureData->index);
+        image->index(textureData->index);
         return;
     }
 
     size_t idx = m_bindlessTextures.add(
-        textureData->data,
-        textureData->width,
-        textureData->height,
-        textureData->channels,
-        image.style_c().pixelated
+        textureData->data, textureData->width, textureData->height, textureData->channels, pixelated
     );
 
     printf(
@@ -391,8 +407,9 @@ void OpenGLRendererImpl::loadImage(Image& image) {
 
     // this is fine :) I guess (I dont want the public api to be non-const, this is controlled  env)
     const_cast<ImageData*>(textureData)->index = idx;
-    image.index(idx);
+    image->index(idx);
 }
+
 
 void OpenGLRendererImpl::loadText(Label& label) {
     const auto& style = label.style_c();

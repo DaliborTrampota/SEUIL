@@ -25,6 +25,8 @@ namespace ui {
         /// @brief Adds a child element to the panel.
         /// @param child The child element to add.
         void addChild(std::shared_ptr<UIElement> child);
+        void removeChild(std::shared_ptr<UIElement> child);
+        size_t childCount() const { return m_children.size(); }
 
         /// @return The children of the panel.
         std::vector<std::shared_ptr<UIElement>>& children() { return m_children; }
