@@ -2,6 +2,7 @@
 
 #include <glad/glad.h>
 
+#include <UI/Configuration.h>
 #include <UI/detail/Quad.h>
 #include <UI/elements/Button.h>
 #include <UI/elements/Image.h>
@@ -64,8 +65,6 @@ OpenGLRendererImpl::OpenGLRendererImpl(const glm::ivec2& viewportSize)
       ),
       m_attributes(GL_DYNAMIC_DRAW),
       m_textAttributes(GL_DYNAMIC_DRAW),
-      m_fbo(),
-      m_outputTexture(0),
       m_shaderColors(1),
       m_fontAtlas(FontAtlas::createDynamic()) {
     m_viewportSize = viewportSize;
@@ -77,19 +76,20 @@ OpenGLRendererImpl::OpenGLRendererImpl(const glm::ivec2& viewportSize)
         printf("GL_ARB_bindless_texture functions are available\n");
     }
 
-    setupFBO();
-    m_material.use();
-    m_material.setVec2("uScreenSize", (glm::vec2)viewportSize);
-    m_textMaterial.use();
-    m_textMaterial.setVec2("uScreenSize", (glm::vec2)viewportSize);
-    m_textMaterial.setInt("uMSDF", 0);
-    m_textMaterial.setFloat("pxRange", FontLoader::PIXEL_RANGE);
-
+    m_msdfTextTexture.create(gl::Settings::LinearClampToEdge());  // linear interpolation
     m_attributes.create();
     m_textAttributes.create();
     m_shaderColors.create({});
 
-    m_textTexture.create(gl::Settings::LinearClampToEdge());  // linear interpolation
+    setupFBO();
+
+    m_material.use();
+    m_material.setVec2("uScreenSize", (glm::vec2)viewportSize);
+
+    m_textMaterial.use();
+    m_textMaterial.setVec2("uScreenSize", (glm::vec2)viewportSize);
+    m_textMaterial.setFloat("pxRange", FontLoader::PIXEL_RANGE);
+    m_textMaterial.setTexture(TEXTURE_UNIT_MSDF, &m_msdfTextTexture, "uMSDF");
 }
 
 void OpenGLRendererImpl::resize(const glm::ivec2& newSize) {
@@ -106,7 +106,7 @@ void OpenGLRendererImpl::resize(const glm::ivec2& newSize) {
 
     // Re-attach RBO to FBO since storage was recreated
     m_fbo.bind();
-    m_fbo.attachRenderBuffer(m_rbo, gl::FBOAttachment::DepthStencil, gl::FBO::Target::ReadDraw);
+    m_fbo.attachRenderBuffer(m_rbo, gl::FBOAttachment::DepthStencil);
     assert(m_fbo.checkCompleteness() == 0);
     m_fbo.unbind();
 
@@ -121,10 +121,10 @@ void OpenGLRendererImpl::setupFBO() {
     m_outputTexture.loadRaw(m_viewportSize.x, m_viewportSize.y, 4, gl::ImageFormat::RGBA, nullptr);
 
     m_fbo.bind();
-    m_fbo.bindTexture(gl::FBOAttachment::Color, m_outputTexture.id());
+    m_fbo.bindTexture(gl::FBOAttachment::Color, &m_outputTexture);
 
     m_rbo.create(m_viewportSize.x, m_viewportSize.y, GL_DEPTH24_STENCIL8, 0);
-    m_fbo.attachRenderBuffer(m_rbo, gl::FBOAttachment::DepthStencil, gl::FBO::Target::ReadDraw);
+    m_fbo.attachRenderBuffer(m_rbo, gl::FBOAttachment::DepthStencil);
     assert(m_fbo.checkCompleteness() == 0);
 
     m_fbo.clearActive({0.0f, 0.0f, 0.0f, 0.0f}, 1.0f, 0);
@@ -177,9 +177,9 @@ void OpenGLRendererImpl::render() {
     if (m_textAttributes.length() > 0) {
         m_textMaterial.use();
         m_textAttributes.bind();
-        m_textMaterial.setInt("uMSDF", 0);
+        m_textMaterial.setInt("uMSDF", TEXTURE_UNIT_MSDF);
         m_textMaterial.setFloat("pxRange", FontLoader::PIXEL_RANGE);
-        m_textTexture.bind();
+        m_msdfTextTexture.bind();
         glDrawArrays(GL_TRIANGLES, 0, m_textAttributes.length());
     }
 
@@ -427,14 +427,14 @@ void OpenGLRendererImpl::loadText(Label& label) {
     int atlasWidth = m_fontAtlas.width();
     int atlasHeight = m_fontAtlas.height();
 
-    m_textTexture.bind();
+    m_msdfTextTexture.bind();
 
-    if (atlasWidth != m_textTexture.width() || atlasHeight != m_textTexture.height()) {
-        m_textTexture.loadRaw(
+    if (atlasWidth != m_msdfTextTexture.width() || atlasHeight != m_msdfTextTexture.height()) {
+        m_msdfTextTexture.loadRaw(
             atlasWidth, atlasHeight, 3, gl::ImageFormat::RGB, const_cast<unsigned char*>(data)
         );
     } else {
-        m_textTexture.update(gl::ImageFormat::RGB, const_cast<unsigned char*>(data));
+        m_msdfTextTexture.update(gl::ImageFormat::RGB, const_cast<unsigned char*>(data));
     }
 
     label.m_textCache = glyphs;

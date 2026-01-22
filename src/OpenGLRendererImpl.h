@@ -40,7 +40,7 @@ namespace ui {
         gl::Attributes<detail::UIVertex> m_attributes;
         gl::Attributes<detail::UITextVertex> m_textAttributes;
 
-        gl::Texture2D m_textTexture{0};
+        gl::Texture2D m_msdfTextTexture;
 
         detail::SSBO<glm::vec4> m_shaderColors;
 

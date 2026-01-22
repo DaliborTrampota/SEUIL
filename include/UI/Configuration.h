@@ -8,6 +8,12 @@
 
 namespace ui {
 
+    static int TEXTURE_UNIT_MSDF = 0;
+
+    inline void setTextureUnitMSDF(int unit) {
+        TEXTURE_UNIT_MSDF = unit;
+    }
+
     enum class CursorType {
         Default,
         Pointer,
