@@ -2,6 +2,11 @@
 
 **SEUIL** is a lightweight, OpenGL-based retained mode UI library for modern C++ applications. Designed with simplicity and flexibility in mind, it provides an intuitive API for creating responsive user interfaces with minimal boilerplate.
 
+
+## Usage
+
+In your game/project's CMake file after linking VoxelEngine, call `setup_seuil_resource_copy(target)` with the target name of your project.
+
 ## Features
 
 - **Flexible Positioning System** - Mix and match absolute and relative positioning/sizing with anchor point system

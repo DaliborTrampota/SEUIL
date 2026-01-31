@@ -76,7 +76,9 @@ OpenGLRendererImpl::OpenGLRendererImpl(const glm::ivec2& viewportSize)
         printf("GL_ARB_bindless_texture functions are available\n");
     }
 
-    m_msdfTextTexture.create(gl::Settings::LinearClampToEdge());  // linear interpolation
+    m_msdfTextTexture.create(
+        gl::TextureParams(gl::TextureParams::ClampToEdge, gl::TextureParams::Linear)
+    );  // linear interpolation
     m_attributes.create();
     m_textAttributes.create();
     m_shaderColors.create({});
@@ -101,7 +103,9 @@ void OpenGLRendererImpl::resize(const glm::ivec2& newSize) {
     m_viewportSize = newSize;
 
     m_outputTexture.bind();
-    m_outputTexture.loadRaw(newSize.x, newSize.y, 4, gl::ImageFormat::RGBA, nullptr);
+    m_outputTexture.allocate(
+        {.width = newSize.x, .height = newSize.y, .format = gl::ImageFormat::RGBA}
+    );
     m_rbo.create(newSize.x, newSize.y, GL_DEPTH24_STENCIL8, 0);
 
     // Re-attach RBO to FBO since storage was recreated
@@ -117,8 +121,12 @@ void OpenGLRendererImpl::resize(const glm::ivec2& newSize) {
 }
 
 void OpenGLRendererImpl::setupFBO() {
-    m_outputTexture.create(gl::Settings::LinearClampToEdge());
-    m_outputTexture.loadRaw(m_viewportSize.x, m_viewportSize.y, 4, gl::ImageFormat::RGBA, nullptr);
+    m_outputTexture.create(
+        gl::TextureParams(gl::TextureParams::ClampToEdge, gl::TextureParams::Linear)
+    );
+    m_outputTexture.allocate(
+        {.width = m_viewportSize.x, .height = m_viewportSize.y, .format = gl::ImageFormat::RGBA}
+    );
 
     m_fbo.bind();
     m_fbo.bindTexture(gl::FBOAttachment::Color, &m_outputTexture);
@@ -168,6 +176,11 @@ void OpenGLRendererImpl::afterRender() {
 void OpenGLRendererImpl::render() {
     beforeRender();
 
+    glDisable(GL_DEPTH_TEST);
+    glDepthMask(GL_FALSE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     if (m_attributes.length() > 0) {
         m_material.use();
         m_attributes.bind();
@@ -176,10 +189,9 @@ void OpenGLRendererImpl::render() {
 
     if (m_textAttributes.length() > 0) {
         m_textMaterial.use();
-        m_textAttributes.bind();
-        m_textMaterial.setInt("uMSDF", TEXTURE_UNIT_MSDF);
         m_textMaterial.setFloat("pxRange", FontLoader::PIXEL_RANGE);
-        m_msdfTextTexture.bind();
+        m_textMaterial.bindTextures();
+        m_textAttributes.bind();
         glDrawArrays(GL_TRIANGLES, 0, m_textAttributes.length());
     }
 
@@ -430,12 +442,13 @@ void OpenGLRendererImpl::loadText(Label& label) {
     m_msdfTextTexture.bind();
 
     if (atlasWidth != m_msdfTextTexture.width() || atlasHeight != m_msdfTextTexture.height()) {
-        m_msdfTextTexture.loadRaw(
-            atlasWidth, atlasHeight, 3, gl::ImageFormat::RGB, const_cast<unsigned char*>(data)
-        );
-    } else {
-        m_msdfTextTexture.update(gl::ImageFormat::RGB, const_cast<unsigned char*>(data));
+        m_msdfTextTexture.allocate({
+            .width = atlasWidth,
+            .height = atlasHeight,
+            .format = gl::ImageFormat::RGB,
+        });
     }
+    m_msdfTextTexture.upload(gl::ImageFormat::RGB, const_cast<unsigned char*>(data));
 
     label.m_textCache = glyphs;
     label.m_dirty = false;
