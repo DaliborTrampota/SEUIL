@@ -105,23 +105,7 @@ void Renderer::unloadFont(FontHandle handle) {
 
 
 void Renderer::renderElements(UIElement* element) {
-    if (auto* panel = dynamic_cast<Panel*>(element)) {
-        Style<Panel> style = panel->style_c();
-        DrawQuad quadCmd = {
-            .rect = element->absolutePositionAndSize(),
-            .color = style.backgroundColor,
-            .roundRadius = style.roundRadius,
-            .borderThickness = style.borderThickness,
-            .borderColor = style.borderColor,
-        };
-        m_impl->submitCommand(quadCmd);
-
-        for (auto& child : panel->children()) {
-            renderElements(child.get());
-        }
-
-
-    } else if (auto* imagePanel = dynamic_cast<ImagePanel*>(element)) {
+    if (auto* imagePanel = dynamic_cast<ImagePanel*>(element)) {
         Style<ImagePanel> style = imagePanel->style_c();
 
         if (imagePanel->m_dirty) {
@@ -140,6 +124,22 @@ void Renderer::renderElements(UIElement* element) {
         m_impl->submitCommand(imageCmd);
 
         for (auto& child : imagePanel->children()) {
+            renderElements(child.get());
+        }
+
+
+    } else if (auto* panel = dynamic_cast<Panel*>(element)) {
+        Style<Panel> style = panel->style_c();
+        DrawQuad quadCmd = {
+            .rect = element->absolutePositionAndSize(),
+            .color = style.backgroundColor,
+            .roundRadius = style.roundRadius,
+            .borderThickness = style.borderThickness,
+            .borderColor = style.borderColor,
+        };
+        m_impl->submitCommand(quadCmd);
+
+        for (auto& child : panel->children()) {
             renderElements(child.get());
         }
 
