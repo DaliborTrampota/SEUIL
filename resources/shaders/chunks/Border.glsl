@@ -1,35 +1,5 @@
-#version 450 core
-#extension GL_ARB_bindless_texture : require
-
-layout(std430, binding = 0) readonly buffer TextureHandles {
-    sampler2D images[];
-};
-
-out vec4 FragColor;
-
-in vec2 uv;
-flat in uint type;
-flat in uint roundness;
-flat in uint borderThickness;
-
-in vec4 color;
-in vec4 borderColor;
-// in vec4 hoverColor;
-// in vec4 pressedColor;
-
-flat in uint data;
-flat in float floatData;
-flat in uint imageIndex;
-
-
-bool perfectBorderRadius = true;
-
-uniform float time;
 
 void renderRoundedCorners(uint r1, uint r2, vec2 panelSize, vec2 uvPixelPos, vec4 color) {
-    if (perfectBorderRadius)
-        r2 = r1 - borderThickness;
-
     vec2 TL = vec2(0, panelSize.y);
     vec2 TR = vec2(panelSize.x, panelSize.y);
     vec2 BL = vec2(0, 0);
@@ -68,15 +38,8 @@ void renderRoundedCorners(uint r1, uint r2, vec2 panelSize, vec2 uvPixelPos, vec
     }
 }
 
-void main() {
-    if (type == uint(1) || type == uint(4)) {  // Image or ImagePanel
-        vec4 texColor = texture(images[imageIndex], uv);
-        FragColor = vec4(texColor.rgb, texColor.a * color.a);
-    } else {
-        FragColor = color;
-    }
-
-    if (roundness > 0.0f) {
+void drawBorder(uint radius, uint thickness, vec4 color) {
+    if (radius > 0.0f) {
         // fwidth gives us the rate of change per screen pixel
         vec2 uvDeriv = fwidth(uv);
         // Estimate panel dimensions: if UV goes from 0 to 1, then 1.0 / derivative = dimension
@@ -84,17 +47,22 @@ void main() {
         // local pixel space (0 to panelSize)
         vec2 localPos = uv * panelSize;
 
-        renderRoundedCorners(roundness, borderThickness, panelSize, localPos, borderColor);
+
+        uint r2 = thickness;
+        if (perfectBorderRadius)
+            r2 = radius - thickness;
+
+        renderRoundedCorners(radius, r2, panelSize, localPos, color);
     }
 
-    if (borderThickness > uint(0)) {
+    if (thickness > uint(0)) {
         vec2 uvDeriv = fwidth(uv);
         vec2 panelSize = 1.0 / uvDeriv;
         vec2 localPos = uv * panelSize;
 
-        if (localPos.x < borderThickness || localPos.x > panelSize.x - borderThickness ||
-            localPos.y < borderThickness || localPos.y > panelSize.y - borderThickness) {
-            FragColor = borderColor;
+        if (localPos.x < thickness || localPos.x > panelSize.x - thickness ||
+            localPos.y < thickness || localPos.y > panelSize.y - thickness) {
+            FragColor = color;
         }
     }
 }

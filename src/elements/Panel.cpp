@@ -27,7 +27,3 @@ void Panel::mouseEvent(const MouseEvent& event) {
         }
     }
 }
-
-void Panel::visit(Renderer& renderer) {
-    renderer.renderPanel(*this);
-}

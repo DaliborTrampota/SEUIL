@@ -9,10 +9,12 @@
 
 
 namespace ui {
+
     class Renderer;
 
     class UIElement {
       public:
+        friend class Renderer;
         using Positions = std::variant<Pos<Abs, Abs>, Pos<Abs, Rel>, Pos<Rel, Abs>, Pos<Rel, Rel>>;
         using Sizes = std::
             variant<Size<Abs, Abs>, Size<Abs, Rel>, Size<Rel, Abs>, Size<Rel, Rel>, Size<Auto, Auto>>;
@@ -29,10 +31,6 @@ namespace ui {
         /// @param event The mouse event.
         virtual void mouseEvent(const MouseEvent& event);
 
-        /// @brief called by the Renderer when the element is rendered.
-        /// @param renderer The renderer.
-        virtual void visit(Renderer& renderer) = 0;
-
         /// @brief Checks if the panel contains a point, eg. mouse position.
         /// @param point The point to check.
         /// @return True if the panel contains the point, false otherwise.
@@ -48,6 +46,8 @@ namespace ui {
         void setPosition(Positions position);
         void setAnchorPoint(AnchorPoint anchorPoint);
 
+        const glm::ivec4& absolutePositionAndSize() const { return m_calculatedDims; }
+
       protected:
         AnchorPoint m_anchorPoint;
         Positions m_position;
@@ -56,9 +56,6 @@ namespace ui {
         std::shared_ptr<Panel> m_parent = nullptr;
 
         EventState m_eventState = EventState::None;
-
-        friend class Renderer;
-        friend class OpenGLRendererImpl;  // TODO new impls has to be added, bad design?
 
         /// @brief Calculates the size and position of the element in the hierarchy.
         /// @param parentPosSize The position and size of the parent element.

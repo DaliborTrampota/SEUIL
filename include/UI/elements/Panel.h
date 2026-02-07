@@ -33,9 +33,6 @@ namespace ui {
 
         void mouseEvent(const MouseEvent& event) override;
 
-        // moved it from private to public and removed friend, should it be in public?
-        void visit(Renderer& renderer) override;
-
         Style<Panel>& style() { return m_style; }
         const Style<Panel>& style_c() const { return m_style; }
 

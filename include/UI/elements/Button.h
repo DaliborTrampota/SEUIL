@@ -1,7 +1,5 @@
 #pragma once
 
-#include <memory>
-
 #include "../Events.h"
 #include "UIElement.h"
 
@@ -21,7 +19,6 @@ namespace ui {
         using UIElement::UIElement;
 
         void mouseEvent(const MouseEvent& event) override;
-        void visit(Renderer& renderer) override;
 
         Style<Button>& style() { return m_style; }
         const Style<Button>& style_c() const { return m_style; }

@@ -3,6 +3,8 @@
 #include <string>
 #include "UIElement.h"
 
+#include "../ResourceManager.h"
+
 namespace msdf_atlas {
     class GlyphGeometry;
 };
@@ -23,7 +25,7 @@ namespace ui {
               m_text(text),
               m_style(style),
               m_alignment(alignment) {
-            m_textCache.reserve(text.size());
+            // m_textCache.reserve(text.size());
         }
 
         Style<Label>& style() { return m_style; }
@@ -32,22 +34,25 @@ namespace ui {
         const AnchorPoint& alignment() const { return m_alignment; }
 
         const std::string& text() const { return m_text; }
-        void text(const std::string& text);
+        void text(const std::string& text) {
+            m_text = text;
+            m_dirty = true;
+        }
 
         bool contains(const glm::vec2& point) const override { return false; }
         void mouseEvent(const MouseEvent& event) override {};
-        void visit(Renderer& renderer) override;
 
-        /// @brief Checks if the text glyphs are generated and cached
-        bool cached() const { return !m_dirty && !m_textCache.empty(); }
+        const FontHandle& fontHandle() const { return m_fontHandle; }
 
       protected:
-        friend class OpenGLRendererImpl;  //TODO get rid?
-        bool m_dirty = true;
-        std::string m_text;
+        friend class Renderer;
+
         Style<Label> m_style;
         AnchorPoint m_alignment;
+        std::string m_text;
 
-        std::vector<const msdf_atlas::GlyphGeometry*> m_textCache;
+        bool m_dirty = true;
+        FontHandle m_fontHandle;
+        TextLayout m_textLayout;
     };
 }  // namespace ui

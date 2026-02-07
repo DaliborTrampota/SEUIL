@@ -4,8 +4,8 @@
 #include <glm/glm.hpp>
 #include <memory>
 
-
-#include "ImageDataMgr.h"
+#include "Configuration.h"
+#include "ResourceManager.h"
 
 namespace ui {
 
@@ -15,10 +15,11 @@ namespace ui {
     class UIElement;
     class Panel;
     class Image;
+    class ImagePanel;
+    class Button;
+    class Label;
+    class Texture;
 
-    enum class RendererType {
-        OpenGL,
-    };
 
     class Renderer {
       public:
@@ -31,14 +32,16 @@ namespace ui {
         void setRoot(std::shared_ptr<Panel> root);
         void setViewportSize(const glm::ivec2& size);
 
-        void renderPanel(Panel& panel);
-        void renderImagePanel(ImagePanel& imagePanel);
-        void renderImage(Image& image);
-        void renderButton(Button& button);
-        void renderLabel(Label& label);
+      public:
+        TextureHandle loadTexture(const std::string& path, bool pixelated = false);
+        TextureHandle registerNativeTexture(void* nativeHandle);
+        void unloadTexture(TextureHandle handle);
 
-        unsigned int textureID() const;
-        inline static ImageDataMgr imageDataMgr;
+        FontHandle loadFont(const std::string& path);
+        void unloadFont(FontHandle handle);
+
+      public:
+        NativeOutputHandle outputHandle() const;
 
         static void markDirty() { s_dirty = true; }
         static CursorType currentCursor() { return s_currentCursor; }
@@ -59,5 +62,6 @@ namespace ui {
 
         void render();
         void layoutElement(UIElement& element, const glm::ivec4& parentDims);
+        void renderElements(UIElement* element);
     };
 }  // namespace ui

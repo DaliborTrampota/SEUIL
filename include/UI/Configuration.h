@@ -6,6 +6,10 @@
 #include <string>
 
 
+namespace gl {
+    class Texture2D;
+}
+
 namespace ui {
 
     static int TEXTURE_UNIT_MSDF = 0;
@@ -13,6 +17,28 @@ namespace ui {
     inline void setTextureUnitMSDF(int unit) {
         TEXTURE_UNIT_MSDF = unit;
     }
+
+
+    enum class RendererType {
+        OpenGL,
+        LWGL
+    };
+
+    struct NativeOutputHandle {
+        RendererType type;
+        const void* handle;
+
+        const gl::Texture2D* forLWGL() const {
+            assert(type == RendererType::LWGL);
+            return reinterpret_cast<const gl::Texture2D*>(handle);
+        }
+
+        unsigned int forOpenGL() const {
+            assert(type == RendererType::OpenGL);
+            return static_cast<unsigned int>(reinterpret_cast<uintptr_t>(handle));
+        }
+    };
+
 
     enum class CursorType {
         Default,
@@ -91,6 +117,7 @@ namespace ui {
     template <typename T>
     struct Style;
 
+    class Texture;
     class Panel;
     class ImagePanel;
     class Image;
@@ -121,6 +148,12 @@ namespace ui {
         unsigned int roundRadius = 0;
         float opacity = 1.0f;
         bool pixelated = false;
+    };
+
+    template <>
+    struct Style<Texture> {
+        unsigned int roundRadius = 0;
+        float opacity = 1.0f;
     };
 
     template <>

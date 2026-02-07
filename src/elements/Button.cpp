@@ -43,7 +43,3 @@ void Button::mouseEvent(const MouseEvent& event) {
     if (prevState != m_eventState)
         Renderer::markDirty();
 }
-
-void Button::visit(Renderer& renderer) {
-    renderer.renderButton(*this);
-}
