@@ -34,10 +34,7 @@ namespace ui {
         const AnchorPoint& alignment() const { return m_alignment; }
 
         const std::string& text() const { return m_text; }
-        void text(const std::string& text) {
-            m_text = text;
-            m_dirty = true;
-        }
+        void text(const std::string& text);
 
         bool contains(const glm::vec2& point) const override { return false; }
         void mouseEvent(const MouseEvent& event) override {};

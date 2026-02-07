@@ -30,10 +30,7 @@ namespace ui {
         Style<Image>& style() { return m_style; }
         const Style<Image>& style_c() const { return m_style; }
 
-        void setSource(const fs::path& sourcePath) {
-            m_sourcePath = sourcePath;
-            m_dirty = true;
-        }
+        void setSource(const fs::path& sourcePath);
 
         const TextureHandle& resourceHandle() const { return m_textureHandle; }
 
