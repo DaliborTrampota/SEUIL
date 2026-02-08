@@ -24,10 +24,11 @@ namespace ui {
     class Label;
     class Texture;
 
+
     class LWGLRendererImpl : public RendererImpl {
       public:
         friend class Renderer;
-        LWGLRendererImpl(const glm::ivec2& viewportSize);
+        LWGLRendererImpl(const glm::ivec2& viewportSize, FontManagerType fontManagerType);
         ~LWGLRendererImpl() = default;
 
         void resize(const glm::ivec2& viewportSize) override final;
@@ -42,6 +43,8 @@ namespace ui {
             };
         }
 
+        void updateAtlas();
+
       public:
         void draw(const DrawQuad& quad);
         void draw(const DrawImage& image);
@@ -51,6 +54,7 @@ namespace ui {
         gl::FBO m_fbo;
         gl::RBO m_rbo;
         gl::Texture2D m_outputTexture;
+        gl::Texture2D m_atlasTexture{false};
 
         std::vector<DrawCommand> m_commands;
         LWGLResourceManager m_resourceManager;
@@ -61,6 +65,6 @@ namespace ui {
 
         gl::ShaderProgram m_quadMaterial;
         gl::ShaderProgram m_imageMaterial;
-        gl::ShaderProgram m_textMaterial;
+        gl::ShaderProgram m_textShaderMSDF;
     };
 }  // namespace ui

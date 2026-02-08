@@ -6,6 +6,7 @@
 
 #include "Configuration.h"
 #include "ResourceManager.h"
+#include "font/FontManager.h"
 
 namespace ui {
 
@@ -23,7 +24,7 @@ namespace ui {
 
     class Renderer {
       public:
-        Renderer(RendererType type, const glm::ivec2& viewportSize);
+        Renderer(RendererType type, FontManagerType fontManagerType, const glm::ivec2& viewportSize);
         virtual ~Renderer();
 
         void mouseEvent(const MouseEvent& event);

@@ -3,11 +3,7 @@
 #include <string>
 #include "UIElement.h"
 
-#include "../ResourceManager.h"
-
-namespace msdf_atlas {
-    class GlyphGeometry;
-};
+#include "../font/FontManager.h"
 
 
 namespace ui {

@@ -79,4 +79,23 @@ namespace ui::lwgl {
         }
     };
 
+    template <typename T>
+    inline T makeQuad(const glm::ivec4& posSize) {
+        glm::vec2 TL = {posSize.x, posSize.y};
+        glm::vec2 TR = {posSize.x + posSize.z, posSize.y};
+        glm::vec2 BL = {posSize.x, posSize.y + posSize.w};
+        glm::vec2 BR = {posSize.x + posSize.z, posSize.y + posSize.w};
+
+        T quad;
+        // The vert shader's NDC has Y inverted
+        quad.vertices[0] = {BR, glm::vec2(1.0f, 1.0f)};
+        quad.vertices[1] = {TL, glm::vec2(0.0f, 0.0f)};
+        quad.vertices[2] = {BL, glm::vec2(0.0f, 1.0f)};
+        quad.vertices[3] = {TL, glm::vec2(0.0f, 0.0f)};
+        quad.vertices[4] = {BR, glm::vec2(1.0f, 1.0f)};
+        quad.vertices[5] = {TR, glm::vec2(1.0f, 0.0f)};
+
+        return quad;
+    }
+
 }  // namespace ui::lwgl

@@ -4,11 +4,18 @@
 #include <LWGL/texture/Texture2D.h>
 #include <LWGL/texture/TextureRef.h>
 
+#include "UI/font/FTFontManager.h"
+
 using namespace ui;
 
-LWGLResourceManager::LWGLResourceManager() : m_fontAtlas(FontAtlas::createDynamic()) {}
+LWGLResourceManager::LWGLResourceManager() {}
 
-void LWGLResourceManager::init() {
+void LWGLResourceManager::init(FontManagerType fontManagerType) {
+    switch (fontManagerType) {
+        case FontManagerType::FreeTypeMSDF:
+            m_fontManager = std::make_unique<FTFontManager>();
+            break;
+    }
     m_colors.create({});
 }
 
@@ -23,6 +30,7 @@ unsigned int LWGLResourceManager::findOrStoreColor(const glm::vec4& color) {
 }
 
 TextureHandle LWGLResourceManager::loadTexture(const std::string& path, bool pixelated) {
+    //TODO check if texxture with that path already loaded
     gl::ImageData imageData(path.c_str());
 
     gl::TextureParams params =
@@ -60,20 +68,4 @@ size_t LWGLResourceManager::getBindlessIndex(TextureHandle handle) const {
         return it->second;
     }
     return std::numeric_limits<size_t>::max();
-}
-
-FontHandle LWGLResourceManager::loadFont(const std::string& path) {
-    return {};
-}
-
-void LWGLResourceManager::unloadFont(FontHandle handle) {}
-
-TextLayout LWGLResourceManager::layoutText(
-    const std::string& text,
-    FontHandle font,
-    float fontSize,
-    const glm::vec2& position,
-    AnchorPoint alignment
-) {
-    return {};
 }

@@ -6,6 +6,7 @@
 
 #include "../Configuration.h"
 #include "../ResourceManager.h"
+#include "../font/FontManager.h"
 
 
 namespace ui {
@@ -25,9 +26,7 @@ namespace ui {
     };
 
     struct DrawText {
-        glm::vec2 position;
-        std::string_view text;
-        FontHandle font;
+        TextLayout layout;
         glm::vec4 color;
         AnchorPoint alignment;
     };

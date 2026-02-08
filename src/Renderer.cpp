@@ -1,24 +1,26 @@
-#include <UI/Renderer.h>
+#include "UI/Renderer.h"
 
-#include <UI/Events.h>
-#include <UI/elements/Button.h>
-#include <UI/elements/Image.h>
-#include <UI/elements/ImagePanel.h>
-#include <UI/elements/Label.h>
-#include <UI/elements/Panel.h>
-#include <UI/elements/Texture.h>
-
+#include "UI/Events.h"
+#include "UI/elements/Button.h"
+#include "UI/elements/Image.h"
+#include "UI/elements/ImagePanel.h"
+#include "UI/elements/Label.h"
+#include "UI/elements/Panel.h"
+#include "UI/elements/Texture.h"
 
 #include "backends/LWGL/LWGLRendererImpl.h"
-
 
 #include <glad/glad.h>
 
 using namespace ui;
 
-Renderer::Renderer(RendererType type, const glm::ivec2& viewportSize) {
+Renderer::Renderer(
+    RendererType type, FontManagerType fontManagerType, const glm::ivec2& viewportSize
+) {
     switch (type) {
-        case RendererType::LWGL: m_impl = std::make_unique<LWGLRendererImpl>(viewportSize); break;
+        case RendererType::LWGL:
+            m_impl = std::make_unique<LWGLRendererImpl>(viewportSize, fontManagerType);
+            break;
         case RendererType::OpenGL:
             // m_impl = std::make_unique<OpenGLRendererImpl>(viewportSize);
             break;
@@ -96,11 +98,11 @@ void Renderer::unloadTexture(TextureHandle handle) {
 }
 
 FontHandle Renderer::loadFont(const std::string& path) {
-    return m_impl->resourceManager().loadFont(path);
+    return m_impl->resourceManager().fontManager().loadFont(path);
 }
 
 void Renderer::unloadFont(FontHandle handle) {
-    m_impl->resourceManager().unloadFont(handle);
+    m_impl->resourceManager().fontManager().unloadFont(handle);
 }
 
 
@@ -121,7 +123,7 @@ void Renderer::renderElements(UIElement* element) {
             .opacity = 1.0f,
             .roundRadius = style.roundRadius,
         };
-        m_impl->submitCommand(imageCmd);
+        m_impl->submitCommand(std::move(imageCmd));
 
         for (auto& child : imagePanel->children()) {
             renderElements(child.get());
@@ -137,7 +139,7 @@ void Renderer::renderElements(UIElement* element) {
             .borderThickness = style.borderThickness,
             .borderColor = style.borderColor,
         };
-        m_impl->submitCommand(quadCmd);
+        m_impl->submitCommand(std::move(quadCmd));
 
         for (auto& child : panel->children()) {
             renderElements(child.get());
@@ -160,15 +162,16 @@ void Renderer::renderElements(UIElement* element) {
             .opacity = style.opacity,
             .roundRadius = style.roundRadius,
         };
-        m_impl->submitCommand(imageCmd);
+        m_impl->submitCommand(std::move(imageCmd));
 
 
     } else if (auto* label = dynamic_cast<Label*>(element)) {
         Style<Label> style = label->style_c();
 
+        label->m_fontHandle = m_impl->resourceManager().fontManager().loadFont(style.font);
+
         if (label->m_dirty) {
-            // TODO font handle and layout
-            label->m_textLayout = m_impl->resourceManager().layoutText(
+            label->m_textLayout = m_impl->resourceManager().fontManager().layoutText(
                 label->text(),
                 label->fontHandle(),
                 style.fontSize,
@@ -180,13 +183,11 @@ void Renderer::renderElements(UIElement* element) {
 
         const glm::ivec4& posSize = element->absolutePositionAndSize();
         DrawText textCmd = {
-            .position = glm::ivec2(posSize.x, posSize.y),
-            .text = label->text(),
-            .font = label->fontHandle(),
+            .layout = label->m_textLayout,
             .color = style.color,
             .alignment = label->alignment(),
         };
-        m_impl->submitCommand(textCmd);
+        m_impl->submitCommand(std::move(textCmd));
 
 
     } else if (auto* texture = dynamic_cast<Texture*>(element)) {
@@ -197,7 +198,7 @@ void Renderer::renderElements(UIElement* element) {
             .opacity = style.opacity,
             .roundRadius = style.roundRadius,
         };
-        m_impl->submitCommand(imageCmd);
+        m_impl->submitCommand(std::move(imageCmd));
 
 
     } else if (auto* button = dynamic_cast<Button*>(element)) {
@@ -214,6 +215,6 @@ void Renderer::renderElements(UIElement* element) {
             .borderThickness = style.borderThickness,
             .borderColor = stateStyle.border,
         };
-        m_impl->submitCommand(quadCmd);
+        m_impl->submitCommand(std::move(quadCmd));
     }
 }

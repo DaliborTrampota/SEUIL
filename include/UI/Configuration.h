@@ -24,6 +24,10 @@ namespace ui {
         LWGL
     };
 
+    enum class FontManagerType {
+        FreeTypeMSDF
+    };
+
     struct NativeOutputHandle {
         RendererType type;
         const void* handle;
