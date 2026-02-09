@@ -66,5 +66,7 @@ namespace ui {
         gl::ShaderProgram m_quadMaterial;
         gl::ShaderProgram m_imageMaterial;
         gl::ShaderProgram m_textShaderMSDF;
+
+        gl::ShaderProgram* m_activeShader = nullptr;
     };
 }  // namespace ui

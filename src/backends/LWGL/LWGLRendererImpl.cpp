@@ -55,11 +55,11 @@ LWGLRendererImpl::LWGLRendererImpl(const glm::ivec2& viewportSize, FontManagerTy
     m_imageAttributes.create();
     m_textAttributes.create();
 
-    // TODO use active shader based on the font manager type
     if (auto mgr = dynamic_cast<FTFontManager*>(&m_resourceManager.fontManager())) {
         m_textShaderMSDF.use();
         m_textShaderMSDF.setFloat("pxRange", FTFontManager::PIXEL_RANGE);
         m_textShaderMSDF.setVec2("uScreenSize", (glm::vec2)m_viewportSize);
+        m_activeShader = &m_textShaderMSDF;
     }
 
     m_outputTexture.create(
@@ -112,9 +112,9 @@ void LWGLRendererImpl::resize(const glm::ivec2& newSize) {
     m_quadMaterial.setVec2("uScreenSize", (glm::vec2)m_viewportSize);
     m_imageMaterial.use();
     m_imageMaterial.setVec2("uScreenSize", (glm::vec2)m_viewportSize);
-    // TODO set to active shader
-    m_textShaderMSDF.use();
-    m_textShaderMSDF.setVec2("uScreenSize", (glm::vec2)m_viewportSize);
+
+    m_activeShader->use();
+    m_activeShader->setVec2("uScreenSize", (glm::vec2)m_viewportSize);
 }
 
 void LWGLRendererImpl::submitCommand(const DrawCommand& command) {
@@ -157,16 +157,14 @@ void LWGLRendererImpl::flush() {
         // Unload because we dont render UI every frame
         m_resourceManager.m_bindlessTextures.unload();
     }
-    // if (auto mgr = dynamic_cast<FTFontManager*>(m_fontManager)) {
-    // TODO use active shader here
+
     if (m_textAttributes.length() > 0) {
-        m_textShaderMSDF.use();
-        m_textShaderMSDF.bindTextures();
+        m_activeShader->use();
+        m_activeShader->bindTextures();
         m_textAttributes.bind();
         glDrawArrays(GL_TRIANGLES, 0, m_textAttributes.length());
         m_textAttributes.clear();
     }
-    // }
 
     m_resourceManager.m_colors.unbind(1);
 
