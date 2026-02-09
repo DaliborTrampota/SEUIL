@@ -282,12 +282,18 @@ cmake --build .
 
 ## Roadmap
 
-- [ ] Text rendering support with FreeType integration
-- [ ] Additional UI elements (Checkbox, Slider, TextField)
+- [x] Backend agnostic rewrite
+- [x] Text rendering support with FreeType integration
+- [ ] Resource reference counting
 - [ ] Layout containers (HBox, VBox, Grid)
 - [ ] Animation system
 - [ ] Theming support?
-- [ ] Vulkan backend?
+
+### Elements
+
+- [x] Texture
+- [ ] Form UI elements (Checkbox, Slider, TextField)
+- [ ] Button text support
 
 ## Contributing
 

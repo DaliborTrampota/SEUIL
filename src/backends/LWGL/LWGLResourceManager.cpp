@@ -30,8 +30,11 @@ unsigned int LWGLResourceManager::findOrStoreColor(const glm::vec4& color) {
 }
 
 TextureHandle LWGLResourceManager::loadTexture(const std::string& path, bool pixelated) {
-    //TODO check if texxture with that path already loaded
     gl::ImageData imageData(path.c_str());
+    if (!imageData.isValid()) {
+        printf("Failed to load texture: %s\n", imageData.error().c_str());
+        return TextureHandle{0};
+    }
 
     gl::TextureParams params =
         pixelated ? gl::TextureParams::Pixelated()

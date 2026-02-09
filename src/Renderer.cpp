@@ -168,7 +168,8 @@ void Renderer::renderElements(UIElement* element) {
     } else if (auto* label = dynamic_cast<Label*>(element)) {
         Style<Label> style = label->style_c();
 
-        label->m_fontHandle = m_impl->resourceManager().fontManager().loadFont(style.font);
+        if (!label->m_fontHandle.isValid())  // Only once, font cant be changed
+            label->m_fontHandle = m_impl->resourceManager().fontManager().loadFont(style.font);
 
         if (label->m_dirty) {
             label->m_textLayout = m_impl->resourceManager().fontManager().layoutText(

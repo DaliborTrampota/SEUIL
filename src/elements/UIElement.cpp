@@ -53,7 +53,6 @@ glm::ivec4 UIElement::calculateSizeAndPosition(const glm::ivec4& parentPosSize) 
         m_size
     );
 
-    // TODO anchor point
     std::visit(
         [this, &parentPosSize](auto& pos) {
             glm::ivec2 modifier = adjustAnchorPoint(m_anchorPoint, m_calculatedDims, parentPosSize);
