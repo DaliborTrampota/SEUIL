@@ -13,9 +13,14 @@ namespace gl {
 namespace ui {
 
     static int TEXTURE_UNIT_MSDF = 0;
+    static int BINDLESS_TEXTURES_UNIT = 0;
 
     inline void setTextureUnitMSDF(int unit) {
         TEXTURE_UNIT_MSDF = unit;
+    }
+
+    inline void setBindlessTexturesUnit(int unit) {
+        BINDLESS_TEXTURES_UNIT = unit;
     }
 
 

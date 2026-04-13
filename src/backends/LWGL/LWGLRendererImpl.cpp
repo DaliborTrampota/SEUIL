@@ -148,6 +148,7 @@ void LWGLRendererImpl::flush() {
     if (m_imageAttributes.length() > 0) {
         m_resourceManager.m_bindlessTextures.use();
         m_resourceManager.m_bindlessTextures.update();
+        m_resourceManager.m_bindlessTextures.bind(BINDLESS_TEXTURES_UNIT);
 
         m_imageMaterial.use();
         m_imageAttributes.bind();
@@ -156,6 +157,7 @@ void LWGLRendererImpl::flush() {
 
         // Unload because we dont render UI every frame
         m_resourceManager.m_bindlessTextures.unload();
+        m_resourceManager.m_bindlessTextures.unbind(BINDLESS_TEXTURES_UNIT);
     }
 
     if (m_textAttributes.length() > 0) {
