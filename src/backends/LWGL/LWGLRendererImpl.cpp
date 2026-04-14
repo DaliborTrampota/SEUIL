@@ -137,6 +137,7 @@ void LWGLRendererImpl::flush() {
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);  // Clear to fully transparent
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    m_resourceManager.m_colors.upload();
     m_resourceManager.m_colors.bind(1);
 
     if (m_quadAttributes.length() > 0) {
