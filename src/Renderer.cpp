@@ -171,18 +171,18 @@ void Renderer::renderElements(UIElement* element) {
         if (!label->m_fontHandle.isValid())  // Only once, font cant be changed
             label->m_fontHandle = m_impl->resourceManager().fontManager().loadFont(style.font);
 
-        if (label->m_dirty) {
+        const glm::ivec4& labelRect = label->absolutePositionAndSize();
+        if (label->m_dirty || label->m_textLayout.position != glm::ivec2(labelRect)) {
             label->m_textLayout = m_impl->resourceManager().fontManager().layoutText(
                 label->text(),
                 label->fontHandle(),
                 style.fontSize,
-                label->absolutePositionAndSize(),
+                labelRect,
                 label->alignment()
             );
             label->m_dirty = false;
         }
 
-        const glm::ivec4& posSize = element->absolutePositionAndSize();
         DrawText textCmd = {
             .layout = label->m_textLayout,
             .color = style.color,
